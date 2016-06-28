@@ -35,7 +35,7 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
 			CPULoad=0
 			CPUAlloc=0
 			RealMem=0
-			AllocMem=0
+			MemAlloc=0
 			MemLoad=0
 			NodeTot=0
 			IDLETot=0
@@ -73,7 +73,7 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
 				if node['CPULoad'] != 'N/A':
 					CPULoad=CPULoad+float(node['CPULoad'])
 				RealMem=RealMem+int(node['RealMemory'])
-				AllocMem=RealMem+int(node['AllocMem'])
+				MemAlloc=RealMem+int(node['AllocMem'])
 				#Slurm only lists actual free memory so we have to back calculate how much is actually used.
 				if node['FreeMem'] != 'N/A':
 					MemLoad=MemLoad+(int(node['RealMemory'])-int(node['FreeMem']))
@@ -118,7 +118,7 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
 			self.publish("cpualloc",CPUAlloc)
 			self.publish("cpuload",CPULoad)
 			self.publish("realmem",RealMem)
-			self.publish("allocmem",AllocMem)
+			self.publish("memalloc",MemAlloc)
 			self.publish("memload",MemLoad)
 			self.publish("idletot",IDLETot)
 			self.publish("downtot",DOWNTot)
