@@ -41,7 +41,7 @@ class SlurmSshareCollector(diamond.collector.Collector):
 					RawShares=RawSharesAccount
 				if User and Account:
 					self.publish('{}.{}.rawshares'.format(Account,User),RawShares)
-					self.publish('{}.{}.normshares'.format(Account,User),NormShares)
+					self.publish('{}.{}.normshares'.format(Account,User),NormShares,precision=6)
 					self.publish('{}.{}.rawusage'.format(Account,User),RawUsage)
-					self.publish('{}.{}.normusage'.format(Account,User),NormUsage)
-					self.publish('{}.{}.fairshare'.format(Account,User),Fairshare)
+					self.publish('{}.{}.normusage'.format(Account,User),NormUsage,precision=6)
+					self.publish('{}.{}.fairshare'.format(Account,User),Fairshare,precision=6)
