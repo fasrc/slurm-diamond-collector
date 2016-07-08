@@ -5,7 +5,7 @@ slurm_sched_stats_diamond.py
 A script that uses PySlurm to get the slurm scheduler statistics.
 """
 
-import sys,os,json,subprocess
+import sys,os,json
 import pyslurm
 import diamond.collector
 
