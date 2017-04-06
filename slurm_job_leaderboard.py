@@ -34,7 +34,7 @@ class SlurmJobLeaderboardCollector(diamond.collector.Collector):
                 l.split('|')[0]]
         stats = {}
         for user, job_state in data:
-            job_state = job_state.lower()
+            job_state = job_state.lower().split()[0]
             job_state_stats = stats.get(job_state, {})
             if user in job_state_stats:
                 job_state_stats[user] += 1
