@@ -11,13 +11,13 @@ from datetime import datetime
 import diamond.collector
 
 
-class SlurmJobsLeaderboard(diamond.collector.Collector):
+class SlurmJobLeaderboardCollector(diamond.collector.Collector):
 
     def get_default_config(self):
         """
         Returns the default collector settings
         """
-        config = super(SlurmJobsLeaderboard, self).get_default_config()
+        config = super(SlurmJobLeaderboardCollector, self).get_default_config()
         config.update({
             'path': 'leaderboard'
         })
