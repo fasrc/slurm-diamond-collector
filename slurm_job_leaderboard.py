@@ -4,13 +4,13 @@ slurm_job_leaderboard.py
 
 Who has the most jobs on the cluster?
 """
-
+import re
 import subprocess
 from datetime import datetime
 
 import diamond.collector
 
-METRIC_CHARS_RE = "[^a-zA-Z0-9_-]"
+METRIC_CHARS_RE = re.compile("[^a-zA-Z0-9_-]")
 METRIC_NAME_MAX_LEN = 255
 
 
