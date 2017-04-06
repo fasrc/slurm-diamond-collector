@@ -35,8 +35,7 @@ class SlurmJobLeaderboardCollector(diamond.collector.Collector):
         )
         data = [l.strip().split('|') for l in proc.stdout.readlines() if
                 l.split('|')[0]]
-        totals = {}
-        stats = dict(total=totals)
+        stats = {}
         for user, job_state in data:
             job_state = job_state.lower().split()[0]
             job_state_stats = stats.get(job_state, {})
@@ -44,10 +43,6 @@ class SlurmJobLeaderboardCollector(diamond.collector.Collector):
                 job_state_stats[user] += 1
             else:
                 job_state_stats[user] = 1
-            if user in totals:
-                totals[user] += 1
-            else:
-                totals[user] = 1
             stats[job_state] = job_state_stats
         return stats
 
