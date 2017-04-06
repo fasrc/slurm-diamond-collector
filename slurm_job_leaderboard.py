@@ -10,6 +10,9 @@ from datetime import datetime
 
 import diamond.collector
 
+METRIC_CHARS_RE = "[^a-zA-Z0-9_-]"
+METRIC_NAME_MAX_LEN = 255
+
 
 class SlurmJobLeaderboardCollector(diamond.collector.Collector):
 
@@ -48,6 +51,9 @@ class SlurmJobLeaderboardCollector(diamond.collector.Collector):
             stats[job_state] = job_state_stats
         return stats
 
+    def convert2metric(self, string):
+        return METRIC_CHARS_RE.sub('_', string)[:METRIC_NAME_MAX_LEN - 1]
+
     def collect(self):
         """
         Collect job counts per user
@@ -59,5 +65,8 @@ class SlurmJobLeaderboardCollector(diamond.collector.Collector):
             return
         for state, user_counts in job_stats.iteritems():
             for user, count in user_counts.iteritems():
-                metric_name = '{state}.{user}'.format(state=state, user=user)
+                metric_name = '{state}.{user}'.format(
+                    state=self.convert2metric(state),
+                    user=self.convert2metric(user)
+                )
                 self.publish(metric_name, count)
