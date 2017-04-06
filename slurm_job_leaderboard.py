@@ -11,7 +11,7 @@ from datetime import datetime
 import diamond.collector
 
 
-class SlurmJobsLeaderboard(diamond.collector.DiamondCollector):
+class SlurmJobsLeaderboard(diamond.collector.Collector):
 
     def get_default_config(self):
         """
