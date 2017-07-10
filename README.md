@@ -24,7 +24,7 @@ This collector pulls the current [state](http://slurm.schedmd.com/scontrol.html 
 
 ### SlurmJobLeaderBoard
 
-This collector pulls in the current [job information](http://slurm/schedmd.com/sacct.html "sacct") for the last hour.  It then summarizes the data per user to be plugged into a leaderboard for the top users.
+This collector pulls in the current [job information](http://slurm.schedmd.com/sacct.html "sacct") for the last hour.  It then summarizes the data per user to be plugged into a leaderboard for the top users.
 
 ## Usage
 
