@@ -64,7 +64,7 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
 			#Cycle through each node
 			for line in proc.stdout:
 				#Turn node information into a hash
-				node = dict(s.split("=") for s in shlex.split(line) if '=' in s)
+				node = dict(s.split("=", 1) for s in shlex.split(line) if '=' in s)
 
 				#Counters.
 				NodeTot=NodeTot+1
