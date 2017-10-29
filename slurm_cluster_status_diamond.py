@@ -79,11 +79,11 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
 					MemLoad=MemLoad+(int(node['RealMemory'])-int(node['FreeMem']))
 
 				#Count how many nodes are in each state
-				if node['State'] == 'IDLE' or node['State'] == 'IDLE+COMPLETING':
+				if node['State'] == 'IDLE' or node['State'] == 'IDLE+COMPLETING' or node['State'] == 'IDLE+POWER' or node['State'] == 'IDLE#':
 					IDLETot=IDLETot+1
 					IDLECPU=IDLECPU+int(node['CPUTot'])
 					IDLEMem=IDLEMem+int(node['RealMemory'])
-				if node['State'] == 'MIXED' or node['State'] == 'MIXED+COMPLETING':
+				if node['State'] == 'MIXED' or node['State'] == 'MIXED+COMPLETING' or node['State'] == 'MIXED#':
 					MIXEDTot=MIXEDTot+1
 					MIXEDCPU=MIXEDCPU+int(node['CPUTot'])
 					MIXEDMem=MIXEDMem+int(node['RealMemory'])
