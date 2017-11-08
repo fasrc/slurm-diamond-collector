@@ -39,6 +39,8 @@ class SlurmSshareCollector(diamond.collector.Collector):
 					RawSharesAccount=RawShares
 				if RawShares == 'parent':
 					RawShares=RawSharesAccount
+				if NormShares == "":
+					NormShares=0
 				if User and Account:
 					self.publish('{}.{}.rawshares'.format(Account,User),RawShares)
 					self.publish('{}.{}.normshares'.format(Account,User),NormShares,precision=6)
