@@ -73,7 +73,7 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
 				if node['CPULoad'] != 'N/A':
 					CPULoad=CPULoad+float(node['CPULoad'])
 				RealMem=RealMem+int(node['RealMemory'])
-				MemAlloc=MemAlloc+int(node['AllocMem'])
+				MemAlloc=MemAlloc+min(int(node['AllocMem']),int(node['RealMemory'])
 				#Slurm only lists actual free memory so we have to back calculate how much is actually used.
 				if node['FreeMem'] != 'N/A':
 					MemLoad=MemLoad+(int(node['RealMemory'])-int(node['FreeMem']))
@@ -110,7 +110,7 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
 
 				#Calculate percent occupation of all nodes.  Some nodes may have few cores used but all their memory allocated.
 				#Thus the node is fully used even though it is not labelled Alloc.  This metric is an attempt to count this properly.
-				PerAlloc=PerAlloc+max(float(node['CPUAlloc'])/float(node['CPUTot']),float(node['AllocMem'])/float(node['RealMemory']))
+				PerAlloc=PerAlloc+max(float(node['CPUAlloc'])/float(node['CPUTot']),min(float(node['AllocMem']),float(node['RealMemory']))/float(node['RealMemory']))
 
 			#Ship it.
 			self.publish("nodetot",NodeTot)
