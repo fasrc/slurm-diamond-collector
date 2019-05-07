@@ -12,7 +12,7 @@ This collector is a diamond version of this:
 
 http://giovannitorres.me/graphing-sdiag-with-graphite.html
 
-As described in the above page it will require you to install [pyslurm](https://github.com/PySlurm/pyslurm "PySlurm").  This collector will collect [sdiag](http://slurm.schedmd.com/sdiag.html "sdiag") stats allowing you to chart your scheduler performance over time.
+This collector will collect [sdiag](http://slurm.schedmd.com/sdiag.html "sdiag") stats allowing you to chart your scheduler performance over time.
 
 ### SlurmSshareCollector
 
