@@ -2,11 +2,11 @@
 
 """
 slurm_sched_stats_diamond.py
-A script that uses PySlurm to get the slurm scheduler statistics.
+A script that uses Popen to get the slurm scheduler statistics.
 """
 
 import sys,os,json
-import pyslurm
+import shlex,subprocess
 import diamond.collector
 
 class SlurmSchedStatsCollector(diamond.collector.Collector):
@@ -23,64 +23,57 @@ class SlurmSchedStatsCollector(diamond.collector.Collector):
     def collect(self):
 
         try:
-            sdiag = pyslurm.statistics().get()
+            proc = subprocess.Popen('sdiag', stdout=subprocess.PIPE)
         except:
             return
         else:
 
+            # Construct dictionary of stats
+            sd = dict()
+            pl = ""
+
+            for line in proc.stdout:
+	            if "Remote" in line:
+		            break
+	            elif "Main" in line:
+		            pl = "m"
+	            elif "Backfilling" in line:
+		            pl = "b"
+	            elif ":" in line:
+		            line = line.replace(" ","").replace('\t',"").replace("(","").replace(")","")
+		            line = pl + line
+		            sd.update(dict(s.split(":", 1) for s in shlex.split(line) if ':' in s))
+            
             # Slurmctld Stats
-            self.publish('server_thread_count',sdiag.get("server_thread_count"))
-            self.publish('agent_queue_size',sdiag.get("agent_queue_size"))
+            self.publish('server_thread_count',sd['Serverthreadcount'])
+            self.publish('agent_queue_size',sd['Agentqueuesize'])
     
             # Jobs Stats
-            self.publish('jobs_submitted',sdiag.get("jobs_submitted"))
-            self.publish('jobs_started',sdiag.get("jobs_started"))
-            self.publish('jobs_completed',sdiag.get("jobs_completed"))
-            self.publish('jobs_canceled',sdiag.get("jobs_canceled"))
-            self.publish('jobs_failed',sdiag.get("jobs_failed"))
+            self.publish('jobs_submitted',sd['Jobssubmitted'])
+            self.publish('jobs_started',sd['Jobsstarted'])
+            self.publish('jobs_completed',sd['Jobscompleted'])
+            self.publish('jobs_canceled',sd['Jobscanceled'])
+            self.publish('jobs_failed',sd['Jobsfailed'])
     
             # Main Scheduler Stats
-            self.publish('main_last_cycle',sdiag.get("schedule_cycle_last"))
-            self.publish('main_max_cycle',sdiag.get("schedule_cycle_max"))
-            self.publish('main_total_cycles',sdiag.get("schedule_cycle_counter"))
-    
-            if sdiag.get("schedule_cycle_counter") > 0:
-                self.publish('main_mean_cycle',
-                    sdiag.get("schedule_cycle_sum") / sdiag.get("schedule_cycle_counter")
-                )
-                self.publish('main_mean_depth_cycle', (
-                    sdiag.get("schedule_cycle_depth") / sdiag.get("schedule_cycle_counter")
-                ))
-    
-            if (sdiag.get("req_time") - sdiag.get("req_time_start")) > 60:
-                self.publish('main_cycles_per_minute', (
-                    sdiag.get("schedule_cycle_counter") /
-                    ((sdiag.get("req_time") - sdiag.get("req_time_start")) / 60)
-                ))
-    
-            self.publish('main_last_queue_length',sdiag.get("schedule_queue_len"))
+            self.publish('main_last_cycle',sd['mLastcycle'])
+            self.publish('main_max_cycle',sd['mMaxcycle'])
+            self.publish('main_total_cycles',sd['mTotalcycles'])
+            self.publish('main_mean_cycle',sd['mMeancycle'])
+            self.publish('main_mean_depth_cycle',sd['mMeandepthcycle'])
+            self.publish('main_cycles_per_minute',sd['mCyclesperminute'])    
+            self.publish('main_last_queue_length',sd['mLastqueuelength'])
     
             # Backfilling stats
-            self.publish('bf_total_jobs_since_slurm_start',sdiag.get("bf_backfilled_jobs"))
-            self.publish('bf_total_jobs_since_cycle_start',sdiag.get("bf_last_backfilled_jobs"))
-            self.publish('bf_total_cycles',sdiag.get("bf_cycle_counter"))
-            self.publish('bf_last_cycle',sdiag.get("bf_cycle_last"))
-            self.publish('bf_max_cycle',sdiag.get("bf_cycle_max"))
-            self.publish('bf_queue_length',sdiag.get("bf_queue_len"))
-    
-            if sdiag.get("bf_cycle_counter") > 0:
-                self.publish('bf_mean_cycle', (
-                    sdiag.get("bf_cycle_sum") / sdiag.get("bf_cycle_counter")
-                ))
-                self.publish('bf_depth_mean', (
-                    sdiag.get("bf_depth_sum") / sdiag.get("bf_cycle_counter")
-                ))
-                self.publish('bf_depth_mean_try', (
-                    sdiag.get("bf_depth_try_sum") / sdiag.get("bf_cycle_counter")
-                ))
-                self.publish('bf_queue_length_mean', (
-                    sdiag.get("bf_queue_len_sum") / sdiag.get("bf_cycle_counter")
-                ))
-    
-            self.publish('bf_last_depth_cycle',sdiag.get("bf_last_depth"))
-            self.publish('bf_last_depth_cycle_try',sdiag.get("bf_last_depth_try"))
+            self.publish('bf_total_jobs_since_slurm_start',sd['bTotalbackfilledjobssincelastslurmstart'])
+            self.publish('bf_total_jobs_since_cycle_start',sd['bTotalbackfilledjobssincelaststatscyclestart'])
+            self.publish('bf_total_cycles',sd['bTotalcycles'])
+            self.publish('bf_last_cycle',sd['bLastcycle'])
+            self.publish('bf_max_cycle',sd['bMaxcycle'])
+            self.publish('bf_queue_length',sd['bLastqueuelength'])
+            self.publish('bf_mean_cycle',sd['bMeancycle'])
+            self.publish('bf_depth_mean',sd['bDepthMean'])
+            self.publish('bf_depth_mean_try',sd['bDepthMeantrydepth'])
+            self.publish('bf_queue_length_mean',sd['bQueuelengthmean'])        
+            self.publish('bf_last_depth_cycle',sd['bLastdepthcycle'])
+            self.publish('bf_last_depth_cycle_try',sd['bLastdepthcycletrysched'])
