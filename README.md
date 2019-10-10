@@ -26,6 +26,10 @@ This collector pulls the current [state](http://slurm.schedmd.com/scontrol.html 
 
 This collector pulls in the current [job information](http://slurm.schedmd.com/sacct.html "sacct") for the last hour.  It then summarizes the data per user to be plugged into a leaderboard for the top users.
 
+### SlurmJobWaste
+
+This collector pulls in the current [job information](http://slurm.schedmd.com/sacct.html "sacct") for the last hour.  It then calculates how many TRES-seconds have been wasted by a job, that meaning how much memory and CPU was not actually used by the job though it was allocated by the scheduler.  It then publishes a summary of how much TRES was not used by the user.
+
 ## Usage
 
 Simply add them to `/usr/share/diamond/collectors` and then activate them in diamond and you should be good to go.
