@@ -78,42 +78,42 @@ class SlurmJobWasteCollector(diamond.collector.Collector):
                         cpustats[User] = float(cpustats[User])+CPUWastedTRES
                         memstats[User] = float(memstats[User])+MemWastedTRES
 
-                # Data
-                User = LUser
-                if User in memstats:
-                    continue
+                    # Data
+                    User = LUser
+                    if User in memstats:
+                        continue
+                    else:
+                        memstats[User]=0
+
+                    if User in cpustats:
+                        continue
+                    else:
+                        cpustats[User]=0
+
+                    account[User]=LAccount
+                    ReqCPUS = LReqCPUS
+                    NNodes = LNNodes
+                    ReqMem = LReqMem
+                    Elapsed = LElapsed
+                    TotalCPU = LTotalCPU
+                    MaxRSS = 0
+
+                    if ('Gn' in ReqMem):
+                        ReqMem=ReqMem.strip("Gn")
+                    if ('Gc' in ReqMem):
+                        ReqMem=float(ReqMem.strip("Gc"))*float(ReqCPUS)/float(NNodes)
+
+                    # Now to compute CPU Wasted Tres
+                    elapsedt = self.convert2sec(Elapsed)
+
+                    totalcput = self.convert2sec(TotalCPU)
+
+                    CPUWastedTRES=max(0,CPUTRESWeight*(float(ReqCPUS)*float(elapsedt)-float(totalcput)))
                 else:
-                    memstats[User]=0
+                    MaxRSS=max(MaxRSS,LMaxRSS.strip("G"))
 
-                if User in cpustats:
-                    continue
-                else:
-                    cpustats[User]=0
-
-                account[User]=LAccount
-                ReqCPUS = LReqCPUS
-                NNodes = LNNodes
-                ReqMem = LReqMem
-                Elapsed = LElapsed
-                TotalCPU = LTotalCPU
-                MaxRSS = 0
-
-                if ('Gn' in ReqMem):
-                    ReqMem=ReqMem.strip("Gn")
-                if ('Gc' in ReqMem):
-                    ReqMem=float(ReqMem.strip("Gc"))*float(ReqCPUS)/float(NNodes)
-
-                # Now to compute CPU Wasted Tres
-                elapsedt = self.convert2sec(Elapsed)
-
-                totalcput = self.convert2sec(TotalCPU)
-
-                CPUWastedTRES=max(0,CPUTRESWeight*(float(ReqCPUS)*float(elapsedt)-float(totalcput)))
-            else:
-                MaxRSS=max(MaxRSS,LMaxRSS.strip("G"))
-
-                # Now to compute Mem Wasted Tres
-                MemWastedTRES=max(0,MemTRESWeight*(float(ReqMem)-float(MaxRSS))*float(elapsedt))        
+                    # Now to compute Mem Wasted Tres
+                    MemWastedTRES=max(0,MemTRESWeight*(float(ReqMem)-float(MaxRSS))*float(elapsedt))        
 
             cpustats[User] = float(cpustats[User])+CPUWastedTRES
             memstats[User] = float(memstats[User])+MemWastedTRES
