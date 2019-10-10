@@ -26,19 +26,19 @@ class SlurmJobWasteCollector(diamond.collector.Collector):
         #Converts DD-HH:MM:SS to seconds
         if ('-' in t):
             (days, tempt) = t.split('-')
-		else:
-		    tempt = t
-		    days = 0
+	    else:
+	        tempt = t
+	        days = 0
 
-		if (tempt.count(":") == 2):
-		    (hours, mins, secs) = tempt.split(':')
-		elif(tempt.count(":") == 1):
-		    (mins,secs) = tempt.split(':')
-		    hours = 0
-		else:
-			secs = tempt
-			mins = 0
-		    hours = 0
+        if (tempt.count(":") == 2):
+            (hours, mins, secs) = tempt.split(':')
+        elif(tempt.count(":") == 1):
+            (mins,secs) = tempt.split(':')
+            hours = 0
+        else:
+        	secs = tempt
+        	mins = 0
+            hours = 0
         tsec = 86400.0*float(days)+3600.0*float(hours)+60.0*float(mins)+float(secs)
         return tsec
 
