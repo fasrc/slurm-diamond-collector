@@ -119,7 +119,7 @@ class SlurmJobWasteCollector(diamond.collector.Collector):
             memstats[User] = float(memstats[User])+MemWastedTRES
 
             # Publish data
-            for user in account[user]:
+            for user in account:
                 totalwaste = float(cpustats[user]) + float(memstats[user])
                 self.publish('{}.{}.cpuwaste'.format(user,account[user]),cpustats[user],precision=6)
                 self.publish('{}.{}.memwaste'.format(user,account[user]),memstats[user],precision=6)
