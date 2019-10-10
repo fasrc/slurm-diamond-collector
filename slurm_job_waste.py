@@ -106,7 +106,7 @@ class SlurmJobWasteCollector(diamond.collector.Collector):
                 # Now to compute CPU Wasted Tres
                 elapsedt = self.convert2sec(Elapsed)
 
-                totalcput = self.convert2sec(TotalCPU))
+                totalcput = self.convert2sec(TotalCPU)
 
                 CPUWastedTRES=max(0,CPUTRESWeight*(float(ReqCPUS)*float(elapsedt)-float(totalcput)))
             else:
