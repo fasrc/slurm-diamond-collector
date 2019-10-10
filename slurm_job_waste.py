@@ -22,7 +22,7 @@ class SlurmJobWasteCollector(diamond.collector.Collector):
         })
         return config
 
-    def convert2sec(t):
+    def convert2sec(self, t):
         #Converts DD-HH:MM:SS to seconds
         if ('-' in t):
             (days, tempt) = t.split('-')
@@ -104,9 +104,9 @@ class SlurmJobWasteCollector(diamond.collector.Collector):
                     ReqMem=float(ReqMem.strip("Gc"))*float(ReqCPUS)/float(NNodes)
 
                 # Now to compute CPU Wasted Tres
-                elapsedt = convert2sec(Elapsed)
+                elapsedt = self.convert2sec(Elapsed)
 
-                totalcput = convert2sec(TotalCPU)
+                totalcput = self.convert2sec(TotalCPU)
 
                 CPUWastedTRES=max(0,CPUTRESWeight*(float(ReqCPUS)*float(elapsedt)-float(totalcput)))
             else:
