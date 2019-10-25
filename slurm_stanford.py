@@ -121,7 +121,12 @@ class SQueueHdlr(EventHandler):
         try:
             key = (group, user, partition, gres, state)
             # gres returns the number of gpus per nodes
-            gres = gres.split(':')
+            if (gres.count(":") == 1):
+                gres = gres.split(':')
+            else:
+                gres = 'gpu:1'
+                gres = gres.split(':')
+
             if gres[0] == 'gpu':  # gres type
                 gpus = int(gres[-1]) * int(nodes)
                 try:
@@ -138,28 +143,28 @@ class SQueueHdlr(EventHandler):
             out="squeue.%s.%s.%s.%s.%s.jobs %d %d" % (
                 group, user, partition, re.sub('[()]','', gres), state, jobs,
                 now())
-            print(carbon_prefix(out))
+#            print(carbon_prefix(out))
         for (group, user, partition, gres, state), cpus in self.cpus.items():
             out="squeue.%s.%s.%s.%s.%s.cpus %d %d" % (
                 group, user, partition, re.sub('[()]','', gres), state, cpus,
                 now())
-            print(carbon_prefix(out))
+#            print(carbon_prefix(out))
         # with reason
         for (group, user, partition, gres, state, reason), jobs in self.jobs_r.items():
             out="squeue.%s.%s.%s.%s.%s.reasons.%s.jobs %d %d" % (
                 group, user, partition, re.sub('[()]','', gres), state, reason, jobs,
                 now())
-            print(carbon_prefix(out))
+#            print(carbon_prefix(out))
         for (group, user, partition, gres, state, reason), cpus in self.cpus_r.items():
             out="squeue.%s.%s.%s.%s.%s.reasons.%s.cpus %d %d" % (
                 group, user, partition, re.sub('[()]','', gres), state, reason, cpus,
                 now())
-            print(carbon_prefix(out))
+#            print(carbon_prefix(out))
         # GPUs
         for (group, user, partition, gres, state), gpus in self.gpus.items():
             out="squeue.%s.%s.%s.%s.%s.gpus %d %d" % (
                 group, user, partition, re.sub('[()]','', gres), state, gpus, now())
-            print(carbon_prefix(out))
+#            print(carbon_prefix(out))
 
 class SInfoHdlr(EventHandler):
     """ClusterShell event handler for sinfo command execution."""
@@ -232,18 +237,22 @@ class SInfoHdlr(EventHandler):
         """sinfo command finished"""
         # Print partition count
         base_path = carbon_prefix("partition_count")
-        print "%s %d %d" % (base_path, len(self.partitions), now())
+#        print "%s %d %d" % (base_path, len(self.partitions), now())
         # Print all details
         for base_path, stated in self.nodes.iteritems():
             for state, nodecnt in stated.iteritems():
-                print "%s.nodes.%s %d %d" % (base_path, state, nodecnt, now())
+                print "I am here"
+#                print "%s.nodes.%s %d %d" % (base_path, state, nodecnt, now())
         for base_path, totalcnt in self.nodes_total.iteritems():
-            print "%s.nodes_total %d %d" % (base_path, totalcnt, now())
+            print "I am here 2"
+#            print "%s.nodes_total %d %d" % (base_path, totalcnt, now())
         for base_path, stated in self.cpus.iteritems():
             for state, cpucnt in stated.iteritems():
-                print "%s.cpus.%s %d %d" % (base_path, state, cpucnt, now())
+                print "I am here 3"
+#                print "%s.cpus.%s %d %d" % (base_path, state, cpucnt, now())
         for base_path, totalcnt in self.cpus_total.iteritems():
-            print "%s.cpus_total %d %d" % (base_path, totalcnt, now())
+            print "I am here 4"
+#            print "%s.cpus_total %d %d" % (base_path, totalcnt, now())
 
 
 ## -- main program ------------------------------------------------------------
@@ -255,7 +264,7 @@ def main():
     task = task_self()
     task.set_default('stdout_msgtree', False)
     # Schedule slurm commands with related handler
-    task.shell("squeue -rh -o '%g %u %P %16b %T %C %D %R'", handler=SQueueHdlr(),
+    task.shell("/usr/bin/squeue -rh -o '%g %u %P %16b %T %C %D %R'", handler=SQueueHdlr(),
                stderr=True)
     task.shell("sinfo -h -e -o '%R %m %c %f %G %T %D %C'", handler=SInfoHdlr(),
                stderr=True)
