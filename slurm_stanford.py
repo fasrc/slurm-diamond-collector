@@ -4,8 +4,8 @@
 #==============================================================================
 # Sherlock Cluster
 #
-# File: slurm.py
-# Description: gather Slurm metrics for monitoring
+# File: slurm_stanford.py
+# Description: Diamond collector to gather Slurm metrics for monitoring
 #
 # Authors  : Stephane Thiell <sthiell@stanford.edu>
 #            Kilian Cavalotti <kilian@stanford.edu>
@@ -14,7 +14,7 @@
 # Updated  : 2015/06/24 - slurm features and gres
 #            2015/06/26 - improved nodes/cpu states
 #            2015/07/06 - sshare
-#            2017/04/18  - Sherlock 2.0 support
+#            2017/04/18 - Sherlock 2.0 support
 #            2019/10/24 - Adapted to diamond for general use
 #
 #==============================================================================
@@ -30,6 +30,7 @@ library for async command execution and nodeset management.
 """
 
 import re, sys, argparse
+import diamond.collector
 
 from datetime import datetime
 from string import maketrans
@@ -55,14 +56,6 @@ def strdate_to_ts(s):
     """
     return int(mktime(
         datetime.strptime(s.strip(), "%a %b %d %H:%M:%S %Y").timetuple()))
-
-def carbon_prefix(s):
-    """
-    Helper function to add a prefix to carbon metric names if defined
-    """
-    out='.'.join(filter(None, ([CARBON_PREFIX, str(s)])))
-    return re.sub(r'\.{2,}', '.', out)
-
 
 ## -- EventHandler classes (process command output) ---------------------------
 
@@ -140,31 +133,27 @@ class SQueueHdlr(EventHandler):
         """squeue command done: print results extracted from dicts"""
         # without reason
         for (group, user, partition, gres, state), jobs in self.jobs.items():
-            out="squeue.%s.%s.%s.%s.%s.jobs %d %d" % (
-                group, user, partition, re.sub('[()]','', gres), state, jobs,
-                now())
-#            print(carbon_prefix(out))
+            out="squeue.%s.%s.%s.%s.%s.jobs" % (
+                group, user, partition, re.sub('[()]','', gres), state)
+            self.publish(out, jobs)
         for (group, user, partition, gres, state), cpus in self.cpus.items():
-            out="squeue.%s.%s.%s.%s.%s.cpus %d %d" % (
-                group, user, partition, re.sub('[()]','', gres), state, cpus,
-                now())
-#            print(carbon_prefix(out))
+            out="squeue.%s.%s.%s.%s.%s.cpus %d" % (
+                group, user, partition, re.sub('[()]','', gres), state)
+            self.publish(out, cpus)
         # with reason
         for (group, user, partition, gres, state, reason), jobs in self.jobs_r.items():
-            out="squeue.%s.%s.%s.%s.%s.reasons.%s.jobs %d %d" % (
-                group, user, partition, re.sub('[()]','', gres), state, reason, jobs,
-                now())
-#            print(carbon_prefix(out))
+            out="squeue.%s.%s.%s.%s.%s.reasons.%s.jobs" % (
+                group, user, partition, re.sub('[()]','', gres), state, reason)
+            self.publish(out, jobs)
         for (group, user, partition, gres, state, reason), cpus in self.cpus_r.items():
-            out="squeue.%s.%s.%s.%s.%s.reasons.%s.cpus %d %d" % (
-                group, user, partition, re.sub('[()]','', gres), state, reason, cpus,
-                now())
-#            print(carbon_prefix(out))
+            out="squeue.%s.%s.%s.%s.%s.reasons.%s.cpus" % (
+                group, user, partition, re.sub('[()]','', gres), state, reason)
+            self.publish(out, cpus)
         # GPUs
         for (group, user, partition, gres, state), gpus in self.gpus.items():
-            out="squeue.%s.%s.%s.%s.%s.gpus %d %d" % (
-                group, user, partition, re.sub('[()]','', gres), state, gpus, now())
-#            print(carbon_prefix(out))
+            out="squeue.%s.%s.%s.%s.%s.gpus" % (
+                group, user, partition, re.sub('[()]','', gres), state)
+            self.publish(out, gpus)
 
 class SInfoHdlr(EventHandler):
     """ClusterShell event handler for sinfo command execution."""
@@ -198,7 +187,6 @@ class SInfoHdlr(EventHandler):
             base_path = "sinfo.%s.%s.%s.%s.%s" % ( partition,
                 match.group("mem"), match.group("cpu"), features,
                 re.sub('[()]','', gres) )
-            base_path=carbon_prefix(base_path)
 
             # build dicts to handle any duplicates and also total...
 
@@ -236,55 +224,48 @@ class SInfoHdlr(EventHandler):
     def ev_close(self, worker):
         """sinfo command finished"""
         # Print partition count
-        base_path = carbon_prefix("partition_count")
-#        print "%s %d %d" % (base_path, len(self.partitions), now())
+        base_path = "sinfo.partition_count"
+        self.publish(base_path, len(self.partitions))
         # Print all details
         for base_path, stated in self.nodes.iteritems():
             for state, nodecnt in stated.iteritems():
-                print "I am here"
-#                print "%s.nodes.%s %d %d" % (base_path, state, nodecnt, now())
+                out = "%s.nodes.%s" % (base_path, state)
+                self.publish(out, nodecnt)
         for base_path, totalcnt in self.nodes_total.iteritems():
-            print "I am here 2"
-#            print "%s.nodes_total %d %d" % (base_path, totalcnt, now())
+            out = "%s.nodes_total" % (base_path)
+            self.publish(out, totalcnt)
         for base_path, stated in self.cpus.iteritems():
             for state, cpucnt in stated.iteritems():
-                print "I am here 3"
-#                print "%s.cpus.%s %d %d" % (base_path, state, cpucnt, now())
+                out = "%s.cpus.%s" % (base_path, state)
+                self.publish(out, cpucnt)
         for base_path, totalcnt in self.cpus_total.iteritems():
-            print "I am here 4"
-#            print "%s.cpus_total %d %d" % (base_path, totalcnt, now())
+            out = "%s.cpus_total" % (base_path)
+            self.publish(out, totalcnt)
 
 
 ## -- main program ------------------------------------------------------------
 
-def main():
-    global _now
-    _now = time()
-    # Get clustershell task object
-    task = task_self()
-    task.set_default('stdout_msgtree', False)
-    # Schedule slurm commands with related handler
-    task.shell("/usr/bin/squeue -rh -o '%g %u %P %16b %T %C %D %R'", handler=SQueueHdlr(),
-               stderr=True)
-    task.shell("sinfo -h -e -o '%R %m %c %f %G %T %D %C'", handler=SInfoHdlr(),
-               stderr=True)
-    # Launch command execution (in parallel)
-    task.resume(timeout=30)
+class SlurmStanfordCollector(diamond.collector.Collector):
+	def get_default_config(self):
+		"""
+		Returns the default collector settings
+		"""
+		config = super(SlurmStanfordCollector, self).get_default_config()
+		config.update({
+		'path':     'stanford'
+		})
+		return config
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description='Export Slurm metrics to Graphite')
-    parser.add_argument('-p', '--prefix',
-        help='metrics prefix (eg. datacenter.cluster)', type=str)
-    args = parser.parse_args()
-
-    if args.prefix:
-        CARBON_PREFIX=args.prefix
-    else:
-        CARBON_PREFIX=None
-
-    try:
-        main()
-    except TimeoutError:
-        print >>sys.stderr, "Timed out."
-        sys.exit(1)
+	def collect(self):
+        global _now
+        _now = time()
+        # Get clustershell task object
+        task = task_self()
+        task.set_default('stdout_msgtree', False)
+        # Schedule slurm commands with related handler
+        task.shell("/usr/bin/squeue -rh -o '%g %u %P %16b %T %C %D %R'", handler=SQueueHdlr(),
+                   stderr=True)
+        task.shell("sinfo -h -e -o '%R %m %c %f %G %T %D %C'", handler=SInfoHdlr(),
+                   stderr=True)
+        # Launch command execution (in parallel)
+        task.resume(timeout=30)
