@@ -42,14 +42,6 @@ from ClusterShell.Event import EventHandler
 
 ## -- Helpers -----------------------------------------------------------------
 
-_now = None
-
-def now():
-    """
-    Return the exact same timestamp, required for metrics consistency
-    """
-    return _now
-
 def strdate_to_ts(s):
     """
     Helper function to convert human readable sdiag date into timestamp
@@ -257,8 +249,6 @@ class SlurmStanfordCollector(diamond.collector.Collector):
 		return config
 
 	def collect(self):
-        global _now
-        _now = time()
         # Get clustershell task object
         task = task_self()
         task.set_default('stdout_msgtree', False)
