@@ -238,17 +238,17 @@ class SInfoHdlr(EventHandler):
 ## -- main program ------------------------------------------------------------
 
 class SlurmStanfordCollector(diamond.collector.Collector):
-	def get_default_config(self):
-		"""
-		Returns the default collector settings
-		"""
-		config = super(SlurmStanfordCollector, self).get_default_config()
-		config.update({
-		'path':     'stanford'
-		})
-		return config
+    def get_default_config(self):
+        """
+        Returns the default collector settings
+        """
+        config = super(SlurmStanfordCollector, self).get_default_config()
+        config.update({
+        'path':     'stanford'
+        })
+        return config
 
-	def collect(self):
+    def collect(self):
         # Get clustershell task object
         task = task_self()
         task.set_default('stdout_msgtree', False)
