@@ -51,7 +51,7 @@ def strdate_to_ts(s):
 
 ## -- EventHandler classes (process command output) ---------------------------
 
-class SQueueHdlr(EventHandler):
+class SQueueHdlr(EventHandler, diamond.collector.Collector):
     """ClusterShell event handler for squeue command execution."""
 
     def __init__(self):
@@ -147,7 +147,7 @@ class SQueueHdlr(EventHandler):
                 group, user, partition, re.sub('[()]','', gres), state)
             self.publish(out, gpus)
 
-class SInfoHdlr(EventHandler):
+class SInfoHdlr(EventHandler, diamond.collector.Collector):
     """ClusterShell event handler for sinfo command execution."""
 
     def __init__(self):
