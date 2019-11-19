@@ -54,6 +54,16 @@ def strdate_to_ts(s):
 class SQueueHdlr(EventHandler, diamond.collector.Collector):
     """ClusterShell event handler for squeue command execution."""
 
+    def get_default_config(self):
+        """
+        Returns the default collector settings
+        """
+        config = super(SlurmStanfordCollector, self).get_default_config()
+        config.update({
+        'path':     'stanford'
+        })
+        return config
+
     def __init__(self):
         """event handler initializer: declare dicts"""
         # (group, user, partition, gres, state) => jobs (int)
@@ -149,6 +159,16 @@ class SQueueHdlr(EventHandler, diamond.collector.Collector):
 
 class SInfoHdlr(EventHandler, diamond.collector.Collector):
     """ClusterShell event handler for sinfo command execution."""
+
+    def get_default_config(self):
+        """
+        Returns the default collector settings
+        """
+        config = super(SlurmStanfordCollector, self).get_default_config()
+        config.update({
+        'path':     'stanford'
+        })
+        return config
 
     def __init__(self):
         """initalizer: compile regexp pattern used to parse sinfo output"""
