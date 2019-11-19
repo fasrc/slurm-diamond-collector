@@ -60,7 +60,7 @@ class SQueueHdlr(EventHandler, diamond.collector.Collector):
         """
         config = super(SlurmStanfordCollector, self).get_default_config()
         config.update({
-        'path':     'stanford'
+            'path': 'stanford'
         })
         return config
 
@@ -166,7 +166,7 @@ class SInfoHdlr(EventHandler, diamond.collector.Collector):
         """
         config = super(SlurmStanfordCollector, self).get_default_config()
         config.update({
-        'path':     'stanford'
+            'path': 'stanford'
         })
         return config
 
@@ -258,13 +258,14 @@ class SInfoHdlr(EventHandler, diamond.collector.Collector):
 ## -- main program ------------------------------------------------------------
 
 class SlurmStanfordCollector(diamond.collector.Collector):
+
     def get_default_config(self):
         """
         Returns the default collector settings
         """
         config = super(SlurmStanfordCollector, self).get_default_config()
         config.update({
-        'path':     'stanford'
+            'path': 'stanford'
         })
         return config
 
