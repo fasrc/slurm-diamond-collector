@@ -236,7 +236,7 @@ class SInfoHdlr(EventHandler, diamond.collector.Collector):
     def ev_close(self, worker):
         """sinfo command finished"""
         # Print partition count
-        get_default_config(self)
+        self.get_default_config(self)
         base_path = "sinfo.partition_count"
         self.publish(base_path, len(self.partitions))
         # Print all details
