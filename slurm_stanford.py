@@ -25,8 +25,7 @@ Slurm metrics
 Gather Slurm metrics and output them in Graphite/Carbon format
 
 This script is designed to minimize load on the Slurm controller by reducing
-the number of calls to squeue, sdiag, etc. It is based on the ClusterShell
-library for async command execution and nodeset management.
+the number of calls to squeue, sdiag, etc.
 """
 
 import re, sys, argparse
@@ -35,10 +34,6 @@ import diamond.collector
 from datetime import datetime
 from string import maketrans
 from time import mktime, time
-
-from ClusterShell.Task import task_self, TimeoutError
-from ClusterShell.Event import EventHandler
-
 
 ## -- Helpers -----------------------------------------------------------------
 
@@ -49,10 +44,12 @@ def strdate_to_ts(s):
     return int(mktime(
         datetime.strptime(s.strip(), "%a %b %d %H:%M:%S %Y").timetuple()))
 
-## -- EventHandler classes (process command output) ---------------------------
+class SInfoHdlr(EventHandler, diamond.collector.Collector):
 
-class SQueueHdlr(EventHandler, diamond.collector.Collector):
-    """ClusterShell event handler for squeue command execution."""
+
+## -- main program ------------------------------------------------------------
+
+class SlurmStanfordCollector(diamond.collector.Collector):
 
     def get_default_config(self):
         """
@@ -64,7 +61,9 @@ class SQueueHdlr(EventHandler, diamond.collector.Collector):
         })
         return config
 
-    def __init__(self):
+    def collect(self):
+
+        ### SQUEUE ####
         """event handler initializer: declare dicts"""
         # (group, user, partition, gres, state) => jobs (int)
         self.jobs = {}
@@ -77,61 +76,71 @@ class SQueueHdlr(EventHandler, diamond.collector.Collector):
         # (group, user, partition, gres, state) => gpus (int)
         self.gpus = {}
 
-    def ev_read(self, worker):
-        """read line from squeue command"""
         try:
-            # workaround for Slurm 18
-            worker.current_msg = re.sub(' +', ' ', worker.current_msg)
-            #
-            group, user, partition, gres, state, cpus, nodes, reason = \
-                worker.current_msg.split(' ', 7)
-            # workaround for Slurm 18
-            if gres == 'N/A':
-                gres = 'null'
-        except ValueError:
-            print >>sys.stderr, "LINE PARSED: %s" % worker.current_msg
-            raise
-        # without reason
-        key = (group, user, partition, gres, state)
-        try:
-            self.jobs[key] += 1
-            self.cpus[key] += int(cpus)
-        except KeyError:
-            self.jobs[key] = 1
-            self.cpus[key] = int(cpus)
-
-        # with reason
-        reason = reason.split(',')[0]
-        if reason.startswith('('):
-            reason = reason.strip('(').strip(')').replace(' ', '_')
-            key = (group, user, partition, gres, state, reason)
-            try:
-                self.jobs_r[key] += 1
-                self.cpus_r[key] += int(cpus)
-            except KeyError:
-                self.jobs_r[key] = 1
-                self.cpus_r[key] = int(cpus)
-
-        # GPUs
-        try:
-            key = (group, user, partition, gres, state)
-            # gres returns the number of gpus per nodes
-            if (gres.count(":") == 1):
-                gres = gres.split(':')
-            else:
-                gres = 'gpu:1'
-                gres = gres.split(':')
-
-            if gres[0] == 'gpu':  # gres type
-                gpus = int(gres[-1]) * int(nodes)
+            # Grab data from slurm
+            proc = subprocess.Popen(
+                    "/usr/bin/squeue -rh -o '%g %u %P %16b %T %C %D %R'"
+                    ).split(),
+                    stdout=subprocess.PIPE
+            )
+        except Exception:
+            self.log.exception("error occured fetching job hash")
+            return
+        else:
+			for line in proc.stdout:
+                """read line from squeue command"""
                 try:
-                    self.gpus[key] += gpus
+                    # workaround for Slurm 18
+                    line = re.sub(' +', ' ', line)
+                    #
+                    group, user, partition, gres, state, cpus, nodes, reason = \
+                        line.split(' ', 7)
+                    # workaround for Slurm 18
+                    if gres == 'N/A':
+                        gres = 'null'
+                except ValueError:
+                    print >>sys.stderr, "LINE PARSED: %s" % line
+                    raise
+                # without reason
+                key = (group, user, partition, gres, state)
+                try:
+                    self.jobs[key] += 1
+                    self.cpus[key] += int(cpus)
                 except KeyError:
-                    self.gpus[key] = gpus
-        except IndexError:  # ignore error if we can't parse
-            pass
+                    self.jobs[key] = 1
+                    self.cpus[key] = int(cpus)
 
-    def ev_close(self, worker):
+                # with reason
+                reason = reason.split(',')[0]
+                if reason.startswith('('):
+                    reason = reason.strip('(').strip(')').replace(' ', '_')
+                    key = (group, user, partition, gres, state, reason)
+                    try:
+                        self.jobs_r[key] += 1
+                        self.cpus_r[key] += int(cpus)
+                    except KeyError:
+                        self.jobs_r[key] = 1
+                        self.cpus_r[key] = int(cpus)
+
+                # GPUs
+                try:
+                    key = (group, user, partition, gres, state)
+                    # gres returns the number of gpus per nodes
+                    if (gres.count(":") == 1):
+                        gres = gres.split(':')
+                    else:
+                        gres = 'gpu:1'
+                        gres = gres.split(':')
+
+                    if gres[0] == 'gpu':  # gres type
+                        gpus = int(gres[-1]) * int(nodes)
+                        try:
+                            self.gpus[key] += gpus
+                        except KeyError:
+                            self.gpus[key] = gpus
+                except IndexError:  # ignore error if we can't parse
+                    pass
+
         """squeue command done: print results extracted from dicts"""
         # without reason
         for (group, user, partition, gres, state), jobs in self.jobs.items():
@@ -157,20 +166,9 @@ class SQueueHdlr(EventHandler, diamond.collector.Collector):
                 group, user, partition, re.sub('[()]','', gres), state)
             self.publish(out, gpus)
 
-class SInfoHdlr(EventHandler, diamond.collector.Collector):
-    """ClusterShell event handler for sinfo command execution."""
 
-    def get_default_config(self):
-        """
-        Returns the default collector settings
-        """
-        config = super(SlurmStanfordCollector, self).get_default_config()
-        config.update({
-            'path': 'stanford'
-        })
-        return config
+        ###SINFO###
 
-    def __init__(self):
         """initalizer: compile regexp pattern used to parse sinfo output"""
         self.pattern = re.compile(
             r"(?P<partition>.*)\s(?P<mem>\d*)\s(?P<cpu>\d*)\s"
@@ -184,59 +182,67 @@ class SInfoHdlr(EventHandler, diamond.collector.Collector):
         self.cpus = {}
         self.cpus_total = {}
 
-    def ev_read(self, worker):
-        """read line from sinfo command"""
-        # owners 64000 16 CPU_IVY,E5-2650v2,2.60GHz,GPU_KPL,TITAN_BLACK,titanblack gpu:gtx:4 mixed 2 8/24/0/32
-        msg = worker.current_msg
-        match = self.pattern.match(msg)
-        if match:
-            # get partition name (cleaned) and add to a set for partition_count
-            partition = match.group("partition").translate(None, '*')
-            self.partitions.add(partition)
-            features = match.group("features").translate(self.transtable, '*')
-            gres = match.group("gres")
-            # build path
-            base_path = "sinfo.%s.%s.%s.%s.%s" % ( partition,
-                match.group("mem"), match.group("cpu"), features,
-                re.sub('[()]','', gres) )
+        try:
+            # Grab data from slurm
+            proc = subprocess.Popen(
+                    "sinfo -h -e -o '%R %m %c %f %G %T %D %C'"
+                    ).split(),
+                    stdout=subprocess.PIPE
+            )
+        except Exception:
+            self.log.exception("error occured fetching job hash")
+            return
+        else:
+			for line in proc.stdout:
+                """read line from sinfo command"""
+                # owners 64000 16 CPU_IVY,E5-2650v2,2.60GHz,GPU_KPL,TITAN_BLACK,titanblack gpu:gtx:4 mixed 2 8/24/0/32
+                msg = line
+                match = self.pattern.match(msg)
+                if match:
+                    # get partition name (cleaned) and add to a set for partition_count
+                    partition = match.group("partition").translate(None, '*')
+                    self.partitions.add(partition)
+                    features = match.group("features").translate(self.transtable, '*')
+                    gres = match.group("gres")
+                    # build path
+                    base_path = "sinfo.%s.%s.%s.%s.%s" % ( partition,
+                        match.group("mem"), match.group("cpu"), features,
+                        re.sub('[()]','', gres) )
 
-            # build dicts to handle any duplicates and also total...
+                    # build dicts to handle any duplicates and also total...
 
-            # nodes
-            state = match.group("state")
-            nodecnt = int(match.group("nodecnt"))
+                    # nodes
+                    state = match.group("state")
+                    nodecnt = int(match.group("nodecnt"))
 
-            if base_path not in self.nodes:
-                self.nodes[base_path] = {'allocated': 0, 'completing': 0,
-                                         'down': 0, 'drained': 0,
-                                         'draining': 0, 'idle': 0,
-                                         'maint':0, 'mixed': 0, 'unknown': 0 }
-                self.nodes[base_path][state] = 0 # in case of another state
-                self.nodes_total[base_path] = 0
+                    if base_path not in self.nodes:
+                        self.nodes[base_path] = {'allocated': 0, 'completing': 0,
+                                                 'down': 0, 'drained': 0,
+                                                 'draining': 0, 'idle': 0,
+                                                 'maint':0, 'mixed': 0, 'unknown': 0 }
+                        self.nodes[base_path][state] = 0 # in case of another state
+                        self.nodes_total[base_path] = 0
 
-            self.nodes_total[base_path] += nodecnt
+                    self.nodes_total[base_path] += nodecnt
 
-            try:
-                self.nodes[base_path][state] += nodecnt
-            except KeyError:
-                self.nodes[base_path][state] = nodecnt
+                    try:
+                        self.nodes[base_path][state] += nodecnt
+                    except KeyError:
+                        self.nodes[base_path][state] = nodecnt
 
-            # CPUs
-            if base_path not in self.cpus:
-                self.cpus[base_path] = { 'allocated': 0,
-                                         'idle': 0,
-                                         'other': 0 }
-                self.cpus_total[base_path] = 0
+                    # CPUs
+                    if base_path not in self.cpus:
+                        self.cpus[base_path] = { 'allocated': 0,
+                                                 'idle': 0,
+                                                 'other': 0 }
+                        self.cpus_total[base_path] = 0
 
-            for cpustate in ('allocated', 'idle', 'other'):
-                self.cpus[base_path][cpustate] += int(match.group(cpustate))
+                    for cpustate in ('allocated', 'idle', 'other'):
+                        self.cpus[base_path][cpustate] += int(match.group(cpustate))
 
-            self.cpus_total[base_path] += int(match.group('total'))
+                    self.cpus_total[base_path] += int(match.group('total'))
 
-    def ev_close(self, worker):
-        """sinfo command finished"""
         # Print partition count
-        self.get_default_config(self)
         base_path = "sinfo.partition_count"
         self.publish(base_path, len(self.partitions))
         # Print all details
@@ -254,30 +260,3 @@ class SInfoHdlr(EventHandler, diamond.collector.Collector):
         for base_path, totalcnt in self.cpus_total.iteritems():
             out = "%s.cpus_total" % (base_path)
             self.publish(out, totalcnt)
-
-
-## -- main program ------------------------------------------------------------
-
-class SlurmStanfordCollector(diamond.collector.Collector):
-
-    def get_default_config(self):
-        """
-        Returns the default collector settings
-        """
-        config = super(SlurmStanfordCollector, self).get_default_config()
-        config.update({
-            'path': 'stanford'
-        })
-        return config
-
-    def collect(self):
-        # Get clustershell task object
-        task = task_self()
-        task.set_default('stdout_msgtree', False)
-        # Schedule slurm commands with related handler
-        task.shell("/usr/bin/squeue -rh -o '%g %u %P %16b %T %C %D %R'", handler=SQueueHdlr(),
-                   stderr=True)
-        task.shell("sinfo -h -e -o '%R %m %c %f %G %T %D %C'", handler=SInfoHdlr(),
-                   stderr=True)
-        # Launch command execution (in parallel)
-        task.resume(timeout=30)
