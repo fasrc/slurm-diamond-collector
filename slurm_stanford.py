@@ -76,8 +76,7 @@ class SlurmStanfordCollector(diamond.collector.Collector):
             # Grab data from slurm
             proc = subprocess.Popen(
                     "/usr/bin/squeue -rh -o '%g %u %P %16b %T %C %D %R'"
-                    ).split(),
-                    stdout=subprocess.PIPE
+                    ),stdout=subprocess.PIPE
             )
         except Exception:
             self.log.exception("error occured fetching job hash")
@@ -182,8 +181,7 @@ class SlurmStanfordCollector(diamond.collector.Collector):
             # Grab data from slurm
             proc = subprocess.Popen(
                     "sinfo -h -e -o '%R %m %c %f %G %T %D %C'"
-                    ).split(),
-                    stdout=subprocess.PIPE
+                    ),stdout=subprocess.PIPE
             )
         except Exception:
             self.log.exception("error occured fetching job hash")
