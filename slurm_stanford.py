@@ -44,13 +44,9 @@ def strdate_to_ts(s):
     return int(mktime(
         datetime.strptime(s.strip(), "%a %b %d %H:%M:%S %Y").timetuple()))
 
-class SInfoHdlr(EventHandler, diamond.collector.Collector):
-
-
 ## -- main program ------------------------------------------------------------
 
 class SlurmStanfordCollector(diamond.collector.Collector):
-
     def get_default_config(self):
         """
         Returns the default collector settings
