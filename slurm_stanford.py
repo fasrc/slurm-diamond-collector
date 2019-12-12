@@ -82,7 +82,7 @@ class SlurmStanfordCollector(diamond.collector.Collector):
             self.log.exception("error occured fetching job hash")
             return
         else:
-			for line in proc.stdout:
+            for line in proc.stdout:
                 ###read line from squeue command###
                 try:
                     # workaround for Slurm 18
@@ -187,7 +187,7 @@ class SlurmStanfordCollector(diamond.collector.Collector):
             self.log.exception("error occured fetching job hash")
             return
         else:
-			for line in proc.stdout:
+            for line in proc.stdout:
                 ###read line from sinfo command###
                 # owners 64000 16 CPU_IVY,E5-2650v2,2.60GHz,GPU_KPL,TITAN_BLACK,titanblack gpu:gtx:4 mixed 2 8/24/0/32
                 msg = line
