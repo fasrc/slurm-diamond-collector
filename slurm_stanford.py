@@ -30,6 +30,7 @@ the number of calls to squeue, sdiag, etc.
 
 import re, sys, argparse
 import diamond.collector
+import subprocess
 
 from datetime import datetime
 from string import maketrans
