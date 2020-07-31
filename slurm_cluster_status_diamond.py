@@ -173,6 +173,8 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
 			umemtres=0.1*float(umem['interlagos']+umem['abudhabi'])+0.2*float(umem['sandybridge']+umem['ivybridge'])+0.4*float(umem['haswell']+umem['broadwell'])+0.5*float(umem['skylake'])+1.0*float(umem['cascadelake'])
 			ugputres=2.2*float(ugpu['titanx']+ugpu['1080'])+15.4*float(ugpu['k20m']+ugpu['k40m']+ugpu['k80'])+75.0*float(ugpu['v100']+ugpu['rtx2080ti']+ugpu['p100'])
 
+			ttres=tcputres+tmemtres+tgputres
+			utres=ucputres+umemtres+ugputres
 			#Current translation from TRES to Double Precision GFLOps
 			t2g=93.25
 
@@ -266,6 +268,8 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
 			self.publish("ucputres",ucputres,precision=1)
 			self.publish("ugputres",ugputres,precision=1)
 			self.publish("umemtres",umemtres,precision=1)
+			self.publish("ttres",ttres,precision=1)
+			self.publish("utres",utres,precision=1)
 			self.publish("tcgflops",tcgflops,precision=1)
 			self.publish("tggflops",tggflops,precision=1)
 			self.publish("ucgflops",ucgflops,precision=1)
