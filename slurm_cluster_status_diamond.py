@@ -70,6 +70,12 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
 			RESGPU=0
 			PerAlloc=0
 
+			tcpu={'interlagos': 0, 'abudhabi': 0, 'sandybridge': 0, 'ivybridge': 0, 'haswell': 0, 'broadwell': 0, 'skylake': 0, 'cascadelake': 0}
+			ucpu={'interlagos': 0, 'abudhabi': 0, 'sandybridge': 0, 'ivybridge': 0, 'haswell': 0, 'broadwell': 0, 'skylake': 0, 'cascadelake': 0}
+			tgpu={'1080': 0, 'k20m': 0, 'k40m': 0, 'k80': 0, 'titanx': 0, 'p100': 0, 'rtx2080ti': 0, 'v100': 0}
+			ugpu={'1080': 0, 'k20m': 0, 'k40m': 0, 'k80': 0, 'titanx': 0, 'p100': 0, 'rtx2080ti': 0, 'v100': 0}
+			umem={'interlagos': 0, 'abudhabi': 0, 'sandybridge': 0, 'ivybridge': 0, 'haswell': 0, 'broadwell': 0, 'skylake': 0, 'cascadelake': 0}
+
 			#Cycle through each node
 			for line in proc.stdout:
 				#Turn node information into a hash
@@ -89,6 +95,17 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
 				else:
 					numgpu=0
 					agpu=0
+
+				#Cataloging all the different CPU's and GPU's
+				for f in node['AvailableFeatures'].split(","):
+					if f in tcpu:
+						tcpu[f]=tcpu[f]+int(node['CPUTot'])
+                        			ucpu[f]=ucpu[f]+int(node['CPUAlloc'])
+                        			umem[f]=umem[f]+float(node['CPUTot'])*float(node['AllocMem'])/float(node['RealMemory'])
+                			if f in tgpu:
+                        			tgpu[f]=tgpu[f]+numgpu
+                        			ugpu[f]=ugpu[f]+agpu
+
 
 				#Counters.
 				NodeTot=NodeTot+1
@@ -147,6 +164,26 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
 				#Similarly if all the GPU's on a gpu node are used it is fully utilized even though CPU and Mem may still be available.
 				PerAlloc=PerAlloc+max(float(node['CPUAlloc'])/float(node['CPUTot']),min(float(node['AllocMem']),float(node['RealMemory']))/float(node['RealMemory']),float(agpu)/max(1,float(numgpu)))
 
+			#Calculate Total TRES and Total FLOps
+			#This is Harvard specific for the weightings.  Update to match what you need.
+			tcputres=0.1*float(tcpu['interlagos']+tcpu['abudhabi'])+0.2*float(tcpu['sandybridge']+tcpu['ivybridge'])+0.4*float(tcpu['haswell']+tcpu['broadwell'])+0.5*f$
+			tmemtres=tcputres
+			tgputres=2.2*float(tgpu['titanx']+tgpu['1080'])+15.4*float(tgpu['k20m']+tgpu['k40m']+tgpu['k80'])+75.0*float(tgpu['v100']+tgpu['rtx2080ti']+tgpu['p100'])
+			ucputres=0.1*float(ucpu['interlagos']+ucpu['abudhabi'])+0.2*float(ucpu['sandybridge']+ucpu['ivybridge'])+0.4*float(ucpu['haswell']+ucpu['broadwell'])+0.5*f$
+			umemtres=0.1*float(umem['interlagos']+umem['abudhabi'])+0.2*float(umem['sandybridge']+umem['ivybridge'])+0.4*float(umem['haswell']+umem['broadwell'])+0.5*f$
+			ugputres=2.2*float(ugpu['titanx']+ugpu['1080'])+15.4*float(ugpu['k20m']+ugpu['k40m']+ugpu['k80'])+75.0*float(ugpu['v100']+ugpu['rtx2080ti']+ugpu['p100'])
+
+			#Current translation from TRES to Double Precision GFLOps
+			t2g=93.25
+
+			tcgflops=t2g*tcputres
+			ucgflops=t2g*ucputres
+			tggflops=t2g*tgputres
+			uggflops=t2g*ugputres
+
+			tgflops=tcgflops+tggflops
+			ugflops=ucgflops+uggflops
+
 			#Ship it.
 			self.publish("nodetot",NodeTot)
 			self.publish("cputot",CPUTot)
@@ -186,3 +223,52 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
                         self.publish("compgpu",COMPGPU)
                         self.publish("resgpu",RESGPU)
 			self.publish("peralloc",PerAlloc,precision=2)
+			self.publish("tcpuinterlagos",tcpu['interlagos'])
+			self.publish("tcpuabudhabi",tcpu['abudhabi'])
+			self.publish("tcpusandybridge",tcpu['sandybridge'])
+			self.publish("tcpuivybridge",tcpu['ivybridge'])
+			self.publish("tcpuhaswell",tcpu['haswell'])
+			self.publish("tcpubroadwell",tcpu['broadwell'])
+			self.publish("tcpucascadelake",tcpu['cascadelake'])
+			self.publish("tgputitanx",tgpu['titanx'])
+			self.publish("tgpu1080",tgpu['1080'])
+			self.publish("tgpuk20m",tgpu['k20m'])
+			self.publish("tgpuk40m",tgpu['k40m'])
+			self.publish("tgpuk80",tgpu['k80'])
+			self.publish("tgpuv100",tgpu['v100'])
+			self.publish("tgpurtx2080i",tgpu['rtx2080i'])
+			self.publish("tgpup100",tgpu['p100'])
+			self.publish("ucpuinterlagos",ucpu['interlagos'])
+			self.publish("ucpuabudhabi",ucpu['abudhabi'])
+			self.publish("ucpusandybridge",ucpu['sandybridge'])
+			self.publish("ucpuivybridge",ucpu['ivybridge'])
+			self.publish("ucpuhaswell",ucpu['haswell'])
+			self.publish("ucpubroadwell",ucpu['broadwell'])
+			self.publish("ucpucascadelake",ucpu['cascadelake'])
+			self.publish("ugputitanx",ugpu['titanx'])
+			self.publish("ugpu1080",ugpu['1080'])
+			self.publish("ugpuk20m",ugpu['k20m'])
+			self.publish("ugpuk40m",ugpu['k40m'])
+			self.publish("ugpuk80",ugpu['k80'])
+			self.publish("ugpuv100",ugpu['v100'])
+			self.publish("ugpurtx2080i",ugpu['rtx2080i'])
+			self.publish("ugpup100",ugpu['p100'])
+			self.publish("umeminterlagos",umem['interlagos'],precision=0)
+			self.publish("umemabudhabi",umem['abudhabi'],precision=0)
+			self.publish("umemsandybridge",umem['sandybridge'],precision=0)
+			self.publish("umemivybridge",umem['ivybridge'],precision=0)
+			self.publish("umemhaswell",umem['haswell'],precision=0)
+			self.publish("umembroadwell",umem['broadwell'],precision=0)
+			self.publish("umemcascadelake",umem['cascadelake'],precision=0)
+			self.publish("tcputres",tcputres,precision=1)
+			self.publish("tgputres",tgputres,precision=1)
+			self.publish("tmemtres",tmemtres,precision=1)
+			self.publish("ucputres",ucputres,precision=1)
+			self.publish("ugputres",ugputres,precision=1)
+			self.publish("umemtres",umemtres,precision=1)
+			self.publish("tcgflops",tcgflops,precision=1)
+			self.publish("tggflops",tggflops,precision=1)
+			self.publish("ucgflops",ucgflops,precision=1)
+			self.publish("uggflops",uggflops,precision=1)
+			self.publish("tgflops",tgflops,precision=1)
+			self.publish("ugflops",ugflops,precision=1)
