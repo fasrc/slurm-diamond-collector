@@ -166,11 +166,11 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
 
 			#Calculate Total TRES and Total FLOps
 			#This is Harvard specific for the weightings.  Update to match what you need.
-			tcputres=0.1*float(tcpu['interlagos']+tcpu['abudhabi'])+0.2*float(tcpu['sandybridge']+tcpu['ivybridge'])+0.4*float(tcpu['haswell']+tcpu['broadwell'])+0.5*f$
+			tcputres=0.1*float(tcpu['interlagos']+tcpu['abudhabi'])+0.2*float(tcpu['sandybridge']+tcpu['ivybridge'])+0.4*float(tcpu['haswell']+tcpu['broadwell'])+0.5*float(tcpu['skylake'])+1.0*float(tcpu['cascadelake'])
 			tmemtres=tcputres
 			tgputres=2.2*float(tgpu['titanx']+tgpu['1080'])+15.4*float(tgpu['k20m']+tgpu['k40m']+tgpu['k80'])+75.0*float(tgpu['v100']+tgpu['rtx2080ti']+tgpu['p100'])
-			ucputres=0.1*float(ucpu['interlagos']+ucpu['abudhabi'])+0.2*float(ucpu['sandybridge']+ucpu['ivybridge'])+0.4*float(ucpu['haswell']+ucpu['broadwell'])+0.5*f$
-			umemtres=0.1*float(umem['interlagos']+umem['abudhabi'])+0.2*float(umem['sandybridge']+umem['ivybridge'])+0.4*float(umem['haswell']+umem['broadwell'])+0.5*f$
+			ucputres=0.1*float(ucpu['interlagos']+ucpu['abudhabi'])+0.2*float(ucpu['sandybridge']+ucpu['ivybridge'])+0.4*float(ucpu['haswell']+ucpu['broadwell'])+0.5*float(ucpu['skylake'])+1.0*float(ucpu['cascadelake'])
+			umemtres=0.1*float(umem['interlagos']+umem['abudhabi'])+0.2*float(umem['sandybridge']+umem['ivybridge'])+0.4*float(umem['haswell']+umem['broadwell'])+0.5*float(umem['skylake'])+1.0*float(umem['cascadelake'])
 			ugputres=2.2*float(ugpu['titanx']+ugpu['1080'])+15.4*float(ugpu['k20m']+ugpu['k40m']+ugpu['k80'])+75.0*float(ugpu['v100']+ugpu['rtx2080ti']+ugpu['p100'])
 
 			#Current translation from TRES to Double Precision GFLOps
