@@ -70,11 +70,11 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
 			RESGPU=0
 			PerAlloc=0
 
-			tcpu={'interlagos': 0, 'abudhabi': 0, 'sandybridge': 0, 'ivybridge': 0, 'haswell': 0, 'broadwell': 0, 'skylake': 0, 'cascadelake': 0}
-			ucpu={'interlagos': 0, 'abudhabi': 0, 'sandybridge': 0, 'ivybridge': 0, 'haswell': 0, 'broadwell': 0, 'skylake': 0, 'cascadelake': 0}
+			tcpu={'interlagos': 0, 'abudhabi': 0, 'ivybridge': 0, 'haswell': 0, 'broadwell': 0, 'skylake': 0, 'cascadelake': 0}
+			ucpu={'interlagos': 0, 'abudhabi': 0, 'ivybridge': 0, 'haswell': 0, 'broadwell': 0, 'skylake': 0, 'cascadelake': 0}
 			tgpu={'1080': 0, 'k20m': 0, 'k40m': 0, 'k80': 0, 'titanx': 0, 'p100': 0, 'rtx2080ti': 0, 'v100': 0}
 			ugpu={'1080': 0, 'k20m': 0, 'k40m': 0, 'k80': 0, 'titanx': 0, 'p100': 0, 'rtx2080ti': 0, 'v100': 0}
-			umem={'interlagos': 0, 'abudhabi': 0, 'sandybridge': 0, 'ivybridge': 0, 'haswell': 0, 'broadwell': 0, 'skylake': 0, 'cascadelake': 0}
+			umem={'interlagos': 0, 'abudhabi': 0, 'ivybridge': 0, 'haswell': 0, 'broadwell': 0, 'skylake': 0, 'cascadelake': 0}
 
 			#Cycle through each node
 			for line in proc.stdout:
@@ -166,11 +166,11 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
 
 			#Calculate Total TRES and Total FLOps
 			#This is Harvard specific for the weightings.  Update to match what you need.
-			tcputres=0.1*float(tcpu['interlagos']+tcpu['abudhabi'])+0.2*float(tcpu['sandybridge']+tcpu['ivybridge'])+0.4*float(tcpu['haswell']+tcpu['broadwell'])+0.5*float(tcpu['skylake'])+1.0*float(tcpu['cascadelake'])
+			tcputres=0.1*float(tcpu['interlagos']+tcpu['abudhabi'])+0.2*float(tcpu['ivybridge'])+0.4*float(tcpu['haswell']+tcpu['broadwell'])+0.5*float(tcpu['skylake'])+1.0*float(tcpu['cascadelake'])
 			tmemtres=tcputres
 			tgputres=2.2*float(tgpu['titanx']+tgpu['1080'])+15.4*float(tgpu['k20m']+tgpu['k40m']+tgpu['k80'])+75.0*float(tgpu['v100']+tgpu['rtx2080ti']+tgpu['p100'])
-			ucputres=0.1*float(ucpu['interlagos']+ucpu['abudhabi'])+0.2*float(ucpu['sandybridge']+ucpu['ivybridge'])+0.4*float(ucpu['haswell']+ucpu['broadwell'])+0.5*float(ucpu['skylake'])+1.0*float(ucpu['cascadelake'])
-			umemtres=0.1*float(umem['interlagos']+umem['abudhabi'])+0.2*float(umem['sandybridge']+umem['ivybridge'])+0.4*float(umem['haswell']+umem['broadwell'])+0.5*float(umem['skylake'])+1.0*float(umem['cascadelake'])
+			ucputres=0.1*float(ucpu['interlagos']+ucpu['abudhabi'])+0.2*float(ucpu['ivybridge'])+0.4*float(ucpu['haswell']+ucpu['broadwell'])+0.5*float(ucpu['skylake'])+1.0*float(ucpu['cascadelake'])
+			umemtres=0.1*float(umem['interlagos']+umem['abudhabi'])+0.2*float(umem['ivybridge'])+0.4*float(umem['haswell']+umem['broadwell'])+0.5*float(umem['skylake'])+1.0*float(umem['cascadelake'])
 			ugputres=2.2*float(ugpu['titanx']+ugpu['1080'])+15.4*float(ugpu['k20m']+ugpu['k40m']+ugpu['k80'])+75.0*float(ugpu['v100']+ugpu['rtx2080ti']+ugpu['p100'])
 
 			ttres=tcputres+tmemtres+tgputres
@@ -227,7 +227,6 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
 			self.publish("peralloc",PerAlloc,precision=2)
 			self.publish("tcpuinterlagos",tcpu['interlagos'])
 			self.publish("tcpuabudhabi",tcpu['abudhabi'])
-			self.publish("tcpusandybridge",tcpu['sandybridge'])
 			self.publish("tcpuivybridge",tcpu['ivybridge'])
 			self.publish("tcpuhaswell",tcpu['haswell'])
 			self.publish("tcpubroadwell",tcpu['broadwell'])
@@ -243,7 +242,6 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
 			self.publish("tgpup100",tgpu['p100'])
 			self.publish("ucpuinterlagos",ucpu['interlagos'])
 			self.publish("ucpuabudhabi",ucpu['abudhabi'])
-			self.publish("ucpusandybridge",ucpu['sandybridge'])
 			self.publish("ucpuivybridge",ucpu['ivybridge'])
 			self.publish("ucpuhaswell",ucpu['haswell'])
 			self.publish("ucpubroadwell",ucpu['broadwell'])
@@ -259,7 +257,6 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
 			self.publish("ugpup100",ugpu['p100'])
 			self.publish("umeminterlagos",umem['interlagos'],precision=0)
 			self.publish("umemabudhabi",umem['abudhabi'],precision=0)
-			self.publish("umemsandybridge",umem['sandybridge'],precision=0)
 			self.publish("umemivybridge",umem['ivybridge'],precision=0)
 			self.publish("umemhaswell",umem['haswell'],precision=0)
 			self.publish("umembroadwell",umem['broadwell'],precision=0)
