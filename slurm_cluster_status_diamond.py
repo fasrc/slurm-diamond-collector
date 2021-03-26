@@ -73,7 +73,7 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
 			tcpu={'interlagos': 0, 'abudhabi': 0, 'ivybridge': 0, 'haswell': 0, 'broadwell': 0, 'skylake': 0, 'cascadelake': 0}
 			ucpu={'interlagos': 0, 'abudhabi': 0, 'ivybridge': 0, 'haswell': 0, 'broadwell': 0, 'skylake': 0, 'cascadelake': 0}
 			tgpu={'1080': 0, 'k20m': 0, 'k40m': 0, 'k80': 0, 'titanx': 0, 'p100': 0, 'rtx2080ti': 0, 'v100': 0, 'a100': 0}
-			ugpu={'1080': 0, 'k20m': 0, 'k40m': 0, 'k80': 0, 'titanx': 0, 'p100': 0, 'rtx2080ti': 0, 'v100': 0, 'al00': 0}
+			ugpu={'1080': 0, 'k20m': 0, 'k40m': 0, 'k80': 0, 'titanx': 0, 'p100': 0, 'rtx2080ti': 0, 'v100': 0, 'a100': 0}
 			umem={'interlagos': 0, 'abudhabi': 0, 'ivybridge': 0, 'haswell': 0, 'broadwell': 0, 'skylake': 0, 'cascadelake': 0}
 
 			#Cycle through each node
