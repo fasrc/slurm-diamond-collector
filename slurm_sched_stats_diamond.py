@@ -33,16 +33,16 @@ class SlurmSchedStatsCollector(diamond.collector.Collector):
             pl = ""
 
             for line in proc.stdout:
-	            if "Remote" in line:
-		            break
-	            elif "Main" in line:
-		            pl = "m"
-	            elif "Backfilling" in line:
-		            pl = "b"
-	            elif ":" in line:
-		            line = line.replace(" ","").replace('\t',"").replace("(","").replace(")","")
-		            line = pl + line
-		            sd.update(dict(s.split(":", 1) for s in shlex.split(line) if ':' in s))
+                    if "Remote" in line:
+                            break
+                    elif "Main" in line:
+                            pl = "m"
+                    elif "Backfilling" in line:
+                            pl = "b"
+                    elif ":" in line:
+                            line = line.replace(" ","").replace('\t',"").replace("(","").replace(")","")
+                            line = pl + line
+                            sd.update(dict(s.split(":", 1) for s in shlex.split(line) if ':' in s))
             
             # Slurmctld Stats
             self.publish('server_thread_count',sd['Serverthreadcount'])
