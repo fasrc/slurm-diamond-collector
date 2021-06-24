@@ -59,8 +59,8 @@ class SlurmJobLeaderboardCollector(diamond.collector.Collector):
         except Exception:
             self.log.exception("error occured fetching job hash")
             return
-        for state, user_counts in job_stats.iteritems():
-            for user, count in user_counts.iteritems():
+        for state, user_counts in job_stats.items():
+            for user, count in user_counts.items():
                 metric_name = '{state}.{user}'.format(
                     state=self.convert2metric(state),
                     user=self.convert2metric(user)
