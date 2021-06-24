@@ -31,7 +31,8 @@ class SlurmJobLeaderboardCollector(diamond.collector.Collector):
             'sacct -S {hour}:00 -n -P -o user,state'.format(
                 hour=datetime.now().hour
             ).split(),
-            stdout=subprocess.PIPE
+            stdout=subprocess.PIPE,
+            universal_newlines=True
         )
         data = [l.strip().split('|') for l in proc.stdout.readlines() if
                 l.split('|')[0]]

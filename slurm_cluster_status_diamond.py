@@ -25,7 +25,8 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
                         proc = subprocess.Popen([
                         'scontrol',
                         '-o', 'show', 'node'
-                        ], stdout=subprocess.PIPE)
+                        ], stdout=subprocess.PIPE,
+                        universal_newlines=True)
                 except:
                         return
                 else:

@@ -26,7 +26,7 @@ class SlurmSshareCollector(diamond.collector.Collector):
                         proc = subprocess.Popen([
                         'sshare',
                         '-ahP', '--format=User,Account,RawShares,NormShares,RawUsage,NormUsage,Fairshare'
-                        ], stdout=subprocess.PIPE)
+                        ], stdout=subprocess.PIPE, universal_newlines=True)
                 except:
                         return
                 else:

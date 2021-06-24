@@ -23,7 +23,7 @@ class SlurmSchedStatsCollector(diamond.collector.Collector):
     def collect(self):
 
         try:
-            proc = subprocess.Popen('sdiag', stdout=subprocess.PIPE)
+            proc = subprocess.Popen('sdiag', stdout=subprocess.PIPE, universal_newlines=True)
         except:
             return
         else:

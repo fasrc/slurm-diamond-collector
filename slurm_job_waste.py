@@ -62,7 +62,8 @@ class SlurmJobWasteCollector(diamond.collector.Collector):
                     'sacct -S {hour}:00 -E now --state=CD --units=G -n -P -o user,Account,ReqCPUS,NNodes,ReqMEM,MaxRSS,Elapsed,TotalCPU'.format(
                         hour=datetime.now().hour
                     ).split(),
-                    stdout=subprocess.PIPE
+                    stdout=subprocess.PIPE,
+                    universal_newlines=True
             )
         except Exception:
             self.log.exception("error occured fetching job hash")
