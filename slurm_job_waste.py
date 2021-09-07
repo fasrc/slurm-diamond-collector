@@ -48,6 +48,7 @@ class SlurmJobWasteCollector(diamond.collector.Collector):
         MemTRESWeight = 0.25
         CPUWastedTRES = 0
         MemWastedTRES = 0
+        MaxRSS = 0
         User = ""
         memstats = {}
         cpustats = {}
@@ -111,8 +112,7 @@ class SlurmJobWasteCollector(diamond.collector.Collector):
 
                     CPUWastedTRES=max(0,CPUTRESWeight*(float(ReqCPUS)*float(elapsedt)-float(totalcput)))
                 else:
-                    sLMaxRSS=LMaxRSS.strip("G")
-                    MaxRSS=max(float(MaxRSS),float(sLMaxRSS))
+                    MaxRSS=max(float(MaxRSS),float(LMaxRSS.strip("G")))
 
                     # Now to compute Mem Wasted Tres
                     MemWastedTRES=max(0,MemTRESWeight*(float(ReqMem)-float(MaxRSS))*float(elapsedt))        
