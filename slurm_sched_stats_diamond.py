@@ -71,21 +71,21 @@ class SlurmSchedStatsCollector(diamond.collector.Collector):
             self.publish('bf_last_cycle',sd['bLastcycle'])
             self.publish('bf_max_cycle',sd['bMaxcycle'])
             self.publish('bf_queue_length',sd['bLastqueuelength'])
-            if bMeancycle in sd:
-                self.publish('bf_mean_cycle', sd['bMeancycle'])
-            else:
+            if bMeancycle not in sd:
                 self.publish('bf_mean_cycle', 0)
-            if bDepthMean in sd:
-                self.publish('bf_depth_mean', sd['bDepthMean'])
             else:
+                self.publish('bf_mean_cycle', sd['bMeancycle'])
+            if bDepthMean not in sd:
                 self.publish('bf_depth_mean', 0)
-            if bDepthMeantrydepth in sd:
-                self.publish('bf_depth_mean_try', sd['bDepthMeantrydepth'])
             else:
+                self.publish('bf_depth_mean', sd['bDepthMean'])
+            if bDepthMeantrydepth not in sd:
                 self.publish('bf_depth_mean_try', 0)
-            if bQueuelengthmean in sd:
-                self.publish('bf_queue_length_mean', sd['bQueuelengthmean'])
             else:
+                self.publish('bf_depth_mean_try', sd['bDepthMeantrydepth'])
+            if bQueuelengthmean not in sd:
                 self.publish('bf_queue_length_mean', 0)
+            else:
+                self.publish('bf_queue_length_mean', sd['bQueuelengthmean'])
             self.publish('bf_last_depth_cycle',sd['bLastdepthcycle'])
             self.publish('bf_last_depth_cycle_try',sd['bLastdepthcycletrysched'])
