@@ -71,10 +71,10 @@ class SlurmSchedStatsCollector(diamond.collector.Collector):
             self.publish('bf_last_cycle',sd['bLastcycle'])
             self.publish('bf_max_cycle',sd['bMaxcycle'])
             self.publish('bf_queue_length',sd['bLastqueuelength'])
-            bMeancycle=0
-            bDepthMean=0
-            bDepthMeantrydepth=0
-            bQueuelengthmean=0
+            bMeancycle=''
+            bDepthMean=''
+            bDepthMeantrydepth=''
+            bQueuelengthmean=''
             self.publish('bf_mean_cycle', (sd['bMeancycle'] if bMeancycle in sd['bMeancycle'] else 0))
             self.publish('bf_depth_mean', (sd['bDepthMean'] if bDepthMean in sd['bDepthMean'] else 0))
             self.publish('bf_depth_mean_try', (sd['bDepthMeantrydepth'] if bDepthMeantrydepth in sd['bDepthMeantrydepth'] else 0))
