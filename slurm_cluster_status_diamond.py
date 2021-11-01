@@ -48,17 +48,20 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
                         ALLOCTot=0
                         RESTot=0
                         COMPTot=0
+                        PLANNEDTot=0
                         IDLECPU=0
                         MIXEDCPU=0
                         ALLOCCPU=0
                         COMPCPU=0
                         RESCPU=0
+                        PLANNEDCPU=0
                         DRAINCPU=0
                         DOWNCPU=0
                         IDLEMem=0
                         MIXEDMem=0
                         ALLOCMem=0
                         COMPMem=0
+                        PLANNEDMem=0
                         DRAINMem=0
                         DOWNMem=0
                         RESMem=0
@@ -69,6 +72,7 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
                         DRAINGPU=0
                         DOWNGPU=0
                         RESGPU=0
+                        PLANNEDGPU=0
                         PerAlloc=0
 
                         tcpu={'interlagos': 0, 'abudhabi': 0, 'ivybridge': 0, 'haswell': 0, 'broadwell': 0, 'skylake': 0, 'rome': 0, 'cascadelake': 0, 'icelake': 0}
@@ -139,6 +143,11 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
                                         ALLOCCPU=ALLOCCPU+int(node['CPUTot'])
                                         ALLOCMem=ALLOCMem+int(node['RealMemory'])
                                         ALLOCGPU=ALLOCGPU+numgpu
+                                if node['State'] == 'IDLE+PLANNED' or node['State'] == 'MIXED+PLANNED':
+                                        PLANNEDTot=PLANNEDTot+1
+                                        PLANNEDCPU=PLANNEDCPU+int(node['CPUTot'])
+                                        PLANNEDMem=PLANNEDMem+int(node['RealMemory'])
+                                        PLANNEDGPU=PLANNEDGPU+numgpu
                                 if "RESERVED" in node['State']:
                                         RESTot=RESTot+1
                                         RESCPU=RESCPU+int(node['CPUTot'])
@@ -204,6 +213,7 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
                         self.publish("alloctot",ALLOCTot)
                         self.publish("comptot",COMPTot)
                         self.publish("restot",RESTot)
+                        self.publish("plannedtot",PLANNEDTot)
                         self.publish("idlecpu",IDLECPU)
                         self.publish("downcpu",DOWNCPU)
                         self.publish("draincpu",DRAINCPU)
@@ -211,6 +221,7 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
                         self.publish("alloccpu",ALLOCCPU)
                         self.publish("compcpu",COMPCPU)
                         self.publish("rescpu",RESCPU)
+                        self.publish("plannedcpu",PLANNEDCPU)
                         self.publish("idlemem",IDLEMem)
                         self.publish("downmem",DOWNMem)
                         self.publish("drainmem",DRAINMem)
@@ -218,6 +229,7 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
                         self.publish("allocmem",ALLOCMem)
                         self.publish("compmem",COMPMem)
                         self.publish("resmem",RESMem)
+                        self.publish("plannedmem",PLANNEDMem)
                         self.publish("idlegpu",IDLEGPU)
                         self.publish("downgpu",DOWNGPU)
                         self.publish("draingpu",DRAINGPU)
@@ -225,6 +237,7 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
                         self.publish("allocgpu",ALLOCGPU)
                         self.publish("compgpu",COMPGPU)
                         self.publish("resgpu",RESGPU)
+                        self.publish("plannedgpu",PLANNEDGPU)
                         self.publish("peralloc",PerAlloc,precision=2)
                         self.publish("tcpuinterlagos",tcpu['interlagos'])
                         self.publish("tcpuabudhabi",tcpu['abudhabi'])
