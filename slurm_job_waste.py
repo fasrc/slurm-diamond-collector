@@ -104,6 +104,8 @@ class SlurmJobWasteCollector(diamond.collector.Collector):
                         ReqMem=ReqMem.strip("Gn")
                     if ('Gc' in ReqMem):
                         ReqMem=float(ReqMem.strip("Gc"))*float(ReqCPUS)/float(NNodes)
+                    else:
+                        ReqMem=ReqMem.strip("G")
 
                     # Now to compute CPU Wasted Tres
                     elapsedt = self.convert2sec(Elapsed)
