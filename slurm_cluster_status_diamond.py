@@ -75,11 +75,11 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
                         PLANNEDGPU=0
                         PerAlloc=0
 
-                        tcpu={'interlagos': 0, 'abudhabi': 0, 'ivybridge': 0, 'haswell': 0, 'broadwell': 0, 'skylake': 0, 'rome': 0, 'cascadelake': 0, 'icelake': 0}
-                        ucpu={'interlagos': 0, 'abudhabi': 0, 'ivybridge': 0, 'haswell': 0, 'broadwell': 0, 'skylake': 0, 'rome': 0, 'cascadelake': 0, 'icelake': 0}
-                        tgpu={'1080': 0, 'k20m': 0, 'k40m': 0, 'k80': 0, 'titanx': 0, 'p100': 0, 'rtx2080ti': 0, 'v100': 0, 'a40': 0, 'a100': 0}
-                        ugpu={'1080': 0, 'k20m': 0, 'k40m': 0, 'k80': 0, 'titanx': 0, 'p100': 0, 'rtx2080ti': 0, 'v100': 0, 'a40': 0, 'a100': 0}
-                        umem={'interlagos': 0, 'abudhabi': 0, 'ivybridge': 0, 'haswell': 0, 'broadwell': 0, 'skylake': 0, 'rome': 0, 'cascadelake': 0, 'icelake': 0}
+                        tcpu={'abudhabi': 0, 'haswell': 0, 'broadwell': 0, 'skylake': 0, 'rome': 0, 'cascadelake': 0, 'icelake': 0}
+                        ucpu={'abudhabi': 0, 'haswell': 0, 'broadwell': 0, 'skylake': 0, 'rome': 0, 'cascadelake': 0, 'icelake': 0}
+                        tgpu={'1080': 0, 'titanx': 0, 'p100': 0, 'rtx2080ti': 0, 'v100': 0, 'a40': 0, 'a100': 0, 'a100-mig': 0}
+                        ugpu={'1080': 0, 'titanx': 0, 'p100': 0, 'rtx2080ti': 0, 'v100': 0, 'a40': 0, 'a100': 0, 'a100-mig': 0}
+                        umem={'abudhabi': 0, 'haswell': 0, 'broadwell': 0, 'skylake': 0, 'rome': 0, 'cascadelake': 0, 'icelake': 0}
 
                         #Cycle through each node
                         for line in proc.stdout:
@@ -176,12 +176,12 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
 
                         #Calculate Total TRES and Total FLOps
                         #This is Harvard specific for the weightings.  Update to match what you need.
-                        tcputres=0.1*float(tcpu['interlagos']+tcpu['abudhabi'])+0.2*float(tcpu['ivybridge'])+0.4*float(tcpu['haswell']+tcpu['broadwell'])+0.5*float(tcpu['skylake'])+0.8*float(tcpu['rome'])+1.0*float(tcpu['cascadelake'])+1.15*float(tcpu['icelake'])
+                        tcputres=0.1*float(tcpu['abudhabi'])+0.4*float(tcpu['haswell']+tcpu['broadwell'])+0.5*float(tcpu['skylake'])+0.8*float(tcpu['rome'])+1.0*float(tcpu['cascadelake'])+1.15*float(tcpu['icelake'])
                         tmemtres=tcputres
-                        tgputres=2.2*float(tgpu['titanx']+tgpu['1080'])+15.4*float(tgpu['k20m']+tgpu['k40m']+tgpu['k80'])+75.0*float(tgpu['v100']+tgpu['rtx2080ti']+tgpu['p100'])+10.0*float(tgpu['a40'])+209.1*float(tgpu['a100'])
-                        ucputres=0.1*float(ucpu['interlagos']+ucpu['abudhabi'])+0.2*float(ucpu['ivybridge'])+0.4*float(ucpu['haswell']+ucpu['broadwell'])+0.5*float(ucpu['skylake'])+0.8*float(tcpu['rome'])+1.0*float(ucpu['cascadelake'])+1.15*float(ucpu['icelake'])
-                        umemtres=0.1*float(umem['interlagos']+umem['abudhabi'])+0.2*float(umem['ivybridge'])+0.4*float(umem['haswell']+umem['broadwell'])+0.5*float(umem['skylake'])+0.8*float(tcpu['rome'])+1.0*float(umem['cascadelake'])+1.15*float(umem['icelake'])
-                        ugputres=2.2*float(ugpu['titanx']+ugpu['1080'])+15.4*float(ugpu['k20m']+ugpu['k40m']+ugpu['k80'])+75.0*float(ugpu['v100']+ugpu['rtx2080ti']+ugpu['p100'])+10.0*float(tgpu['a40'])+209.1*float(ugpu['a100'])
+                        tgputres=2.2*float(tgpu['titanx']+tgpu['1080'])+75.0*float(tgpu['v100']+tgpu['rtx2080ti']+tgpu['p100'])+10.0*float(tgpu['a40'])+209.1*float(tgpu['a100'])+29.9*float(tgpu['a100-mig'])
+                        ucputres=0.1*float(ucpu['abudhabi'])+0.4*float(ucpu['haswell']+ucpu['broadwell'])+0.5*float(ucpu['skylake'])+0.8*float(tcpu['rome'])+1.0*float(ucpu['cascadelake'])+1.15*float(ucpu['icelake'])
+                        umemtres=0.1*float(umem['abudhabi'])+0.4*float(umem['haswell']+umem['broadwell'])+0.5*float(umem['skylake'])+0.8*float(tcpu['rome'])+1.0*float(umem['cascadelake'])+1.15*float(umem['icelake'])
+                        ugputres=2.2*float(ugpu['titanx']+ugpu['1080'])+75.0*float(ugpu['v100']+ugpu['rtx2080ti']+ugpu['p100'])+10.0*float(tgpu['a40'])+209.1*float(ugpu['a100'])+29.9*float(ugpu['a100-mig'])
 
                         ttres=tcputres+tmemtres+tgputres
                         utres=ucputres+umemtres+ugputres
@@ -239,9 +239,7 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
                         self.publish("resgpu",RESGPU)
                         self.publish("plannedgpu",PLANNEDGPU)
                         self.publish("peralloc",PerAlloc,precision=2)
-                        self.publish("tcpuinterlagos",tcpu['interlagos'])
                         self.publish("tcpuabudhabi",tcpu['abudhabi'])
-                        self.publish("tcpuivybridge",tcpu['ivybridge'])
                         self.publish("tcpuhaswell",tcpu['haswell'])
                         self.publish("tcpubroadwell",tcpu['broadwell'])
                         self.publish("tcpuskylake",tcpu['skylake'])
@@ -250,17 +248,13 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
                         self.publish("tcpuicelake",tcpu['icelake'])
                         self.publish("tgputitanx",tgpu['titanx'])
                         self.publish("tgpu1080",tgpu['1080'])
-                        self.publish("tgpuk20m",tgpu['k20m'])
-                        self.publish("tgpuk40m",tgpu['k40m'])
-                        self.publish("tgpuk80",tgpu['k80'])
                         self.publish("tgpuv100",tgpu['v100'])
                         self.publish("tgpurtx2080ti",tgpu['rtx2080ti'])
                         self.publish("tgpup100",tgpu['p100'])
                         self.publish("tgpua40",tgpu['a40'])
                         self.publish("tgpua100",tgpu['a100'])
-                        self.publish("ucpuinterlagos",ucpu['interlagos'])
+                        self.publish("tgpua100mig",tgpu['a100-mig'])
                         self.publish("ucpuabudhabi",ucpu['abudhabi'])
-                        self.publish("ucpuivybridge",ucpu['ivybridge'])
                         self.publish("ucpuhaswell",ucpu['haswell'])
                         self.publish("ucpubroadwell",ucpu['broadwell'])
                         self.publish("ucpuskylake",ucpu['skylake'])
@@ -269,17 +263,13 @@ class SlurmClusterStatusCollector(diamond.collector.Collector):
                         self.publish("ucpuicelake",ucpu['icelake'])
                         self.publish("ugputitanx",ugpu['titanx'])
                         self.publish("ugpu1080",ugpu['1080'])
-                        self.publish("ugpuk20m",ugpu['k20m'])
-                        self.publish("ugpuk40m",ugpu['k40m'])
-                        self.publish("ugpuk80",ugpu['k80'])
                         self.publish("ugpuv100",ugpu['v100'])
                         self.publish("ugpurtx2080ti",ugpu['rtx2080ti'])
                         self.publish("ugpup100",ugpu['p100'])
                         self.publish("ugpua40",ugpu['a40'])
                         self.publish("ugpua100",ugpu['a100'])
-                        self.publish("umeminterlagos",umem['interlagos'],precision=0)
+                        self.publish("ugpua100mig",ugpu['a100-mig'])
                         self.publish("umemabudhabi",umem['abudhabi'],precision=0)
-                        self.publish("umemivybridge",umem['ivybridge'],precision=0)
                         self.publish("umemhaswell",umem['haswell'],precision=0)
                         self.publish("umembroadwell",umem['broadwell'],precision=0)
                         self.publish("umemskylake",umem['skylake'],precision=0)
