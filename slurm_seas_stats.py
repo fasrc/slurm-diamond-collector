@@ -44,5 +44,5 @@ class SlurmSeasStatsCollector(diamond.collector.Collector):
       rave = float(rtot)/float(jcnt)
       pave = float(ptot)/float(jcnt)
 
-      self.publish("restartave",rave)
+      self.publish("restartave",rave,precision=2)
       self.publish("pendingave",pave)
