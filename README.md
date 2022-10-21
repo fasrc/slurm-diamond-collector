@@ -30,6 +30,10 @@ This collector pulls in the current [job information](http://slurm.schedmd.com/s
 
 This collector pulls in the current [job information](http://slurm.schedmd.com/sacct.html "sacct") for the last hour.  It then calculates how many TRES-seconds have been wasted by a job, that meaning how much memory and CPU was not actually used by the job though it was allocated by the scheduler.  It then publishes a summary of how much TRES was not used by the user.
 
+### SlurmSeasStats
+
+This collector pulls stats for Harvard SEAS.
+
 ## Usage
 
 Simply add them to `/usr/share/diamond/collectors` and then activate them in diamond and you should be good to go.
