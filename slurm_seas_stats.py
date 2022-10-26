@@ -37,7 +37,7 @@ class SlurmSeasStatsCollector(diamond.collector.Collector):
       jseas = 0
 
       for line in proc.stdout:
-        (RestartCnt, PendingTime) = (" ".join(line.split())).split(" ")
+        (RestartCnt, PendingTime, Partition) = (" ".join(line.split())).split(" ")
 
         # Summing total number of Restarts and Pending time for later average
         rtot = int(RestartCnt) + rtot
