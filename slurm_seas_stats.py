@@ -24,7 +24,7 @@ class SlurmSeasStatsCollector(diamond.collector.Collector):
     try:
       proc = subprocess.Popen(['/usr/bin/squeue',
       '--account=acc_lab,aizenberg_lab,amin_lab,anderson_lab,aziz_lab,barak_lab,bertoldi_lab,brenner_lab,capasso_lab,chen_lab_seas,chong_lab_seas,clarke_lab,doshi-velez_lab,dwork_lab,farrell_lab,fdoyle_lab,gajos_lab,glassman_lab,hekstra_lab,hills_lab,hu_lab_seas,idreos_lab,jacob_lab,janapa_reddi_lab,jialiu_lab,jlewis_lab,kaxiras_lab,keith_lab_seas,keutsch_lab,kohler_lab,koumoutsakos_lab,kozinsky_lab,kung_lab,linz_lab,mahadevan_lab,manoharan_lab,martin_lab_seas,mazur_lab_seas,mccoll_lab,mcelroy_lab,mitragotri_lab,moorcroft_lab,nelson_lab,parkes_lab,pehlevan_lab,pfister_lab,protopapas_lab,rush_lab,seas_computing,spaepen_lab,sunderland_lab,suo_lab,tambe_lab,tziperman_lab,vadhan_lab,vlassak_lab,walsh_lab_seas,weitz_lab,wofsy_lab,wordsworth_lab,ysinger_group,yu_lab,zickler_lab',
-      '--Format=RestartCnt,PendingTime',
+      '--Format=RestartCnt,PendingTime,Partition',
       '--noheader',
       ], stdout=subprocess.PIPE,
       universal_newlines=True)
@@ -34,15 +34,41 @@ class SlurmSeasStatsCollector(diamond.collector.Collector):
       rtot = 0
       ptot = 0
       jcnt = 0
+      jseas = 0
 
       for line in proc.stdout:
         (RestartCnt, PendingTime) = (" ".join(line.split())).split(" ")
+
+        # Summing total number of Restarts and Pending time for later average
         rtot = int(RestartCnt) + rtot
         ptot = int(PendingTime) + ptot
+
+        # Tallying if this job is using one of these partitions
+        if Partition.count('barak_gpu') > 0: jseas += 1
+        if Partition.count('barak_ysinger_gpu') > 0: jseas += 1
+        if Partition.count('doshi-velez') > 0: jseas += 1
+        if Partition.count('huce') > 0: jseas += 1
+        if Partition.count('idreos_parkes') > 0: jseas += 1
+        if Partition.count('imasc') > 0: jseas += 1
+        if Partition.count('jacob_dev') > 0: jseas += 1
+        if Partition.count('kaxiras') > 0: jseas += 1
+        if Partition.count('kaxirasgpu') > 0: jseas += 1
+        if Partition.count('kozinsky') > 0: jseas += 1
+        if Partition.count('mazur') > 0: jseas += 1
+        if Partition.count('narang_dgx1') > 0: jseas += 1
+        if Partition.count('pehlevan') > 0: jseas += 1
+        if Partition.count('tambe_gpu') > 0: jseas += 1
+        if Partition.count('zickler') > 0: jseas += 1
+        if Partition.count('cox') > 0: jseas += 1
+        if Partition.count('seas') > 0: jseas += 1
+
         jcnt = jcnt + 1
 
+      # Averaging Restart Count and Pending Time
       rave = float(rtot)/float(jcnt)
       pave = float(ptot)/float(jcnt)
 
       self.publish("restartave",rave,precision=2)
       self.publish("pendingave",pave)
+      self.publish("totseasjobs",jcnt)
+      self.publish("seaspartjobs",jseas)
