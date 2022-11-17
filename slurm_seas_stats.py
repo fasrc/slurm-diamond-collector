@@ -72,3 +72,43 @@ class SlurmSeasStatsCollector(diamond.collector.Collector):
       self.publish("pendingave",pave)
       self.publish("totseasjobs",jcnt)
       self.publish("seaspartjobs",jseas)
+
+    try:
+      proc = subprocess.Popen(['/usr/local/bin/showq',
+      '-s',
+      '-p',
+      'seas',
+      ], stdout=subprocess.PIPE,
+      universal_newlines=True)
+    except:
+      exit
+    else:
+      for line in proc.stdout:
+        if "cores" in line:
+          line = line.replace("("," ").replace(")"," ")
+          summary = (" ".join(line.split())).split(" ")
+          # Publishes number of used cores, total cores, used nodes, and total nodes in the seas compute partition
+          self.publish("sccu",summary[4])
+          self.publish("scct",summary[6])
+          self.publish("scnu",summary[11])
+          self.publish("scnt",summary[13])
+
+    try:
+      proc = subprocess.Popen(['/usr/local/bin/showq',
+      '-s',
+      '-p',
+      'seas_gpu',
+      ], stdout=subprocess.PIPE,
+      universal_newlines=True)
+    except:
+      exit
+    else:
+      for line in proc.stdout:
+        if "cores" in line:
+          line = line.replace("("," ").replace(")"," ")
+          summary = (" ".join(line.split())).split(" ")
+          # Publishes number of used cores, total cores, used nodes, and total nodes in the seas gpu partition
+          self.publish("sgcu",summary[4])
+          self.publish("sgct",summary[6])
+          self.publish("sgnu",summary[11])
+          self.publish("sgnt",summary[13])
