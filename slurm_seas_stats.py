@@ -90,8 +90,8 @@ class SlurmSeasStatsCollector(diamond.collector.Collector):
           # Publishes number of used cores, total cores, used nodes, and total nodes in the seas compute partition
           self.publish("sccu",summary[4])
           self.publish("scct",summary[6])
-          self.publish("scnu",summary[11])
-          self.publish("scnt",summary[13])
+          self.publish("scnu",summary[18])
+          self.publish("scnt",summary[20])
 
     try:
       proc = subprocess.Popen(['/usr/local/bin/showq',
@@ -110,5 +110,7 @@ class SlurmSeasStatsCollector(diamond.collector.Collector):
           # Publishes number of used cores, total cores, used nodes, and total nodes in the seas gpu partition
           self.publish("sgcu",summary[4])
           self.publish("sgct",summary[6])
-          self.publish("sgnu",summary[11])
-          self.publish("sgnt",summary[13])
+          self.publish("sggu",summary[11])
+          self.publish("sggt",summary[13])
+          self.publish("sgnu",summary[18])
+          self.publish("sgnt",summary[20])
