@@ -77,7 +77,7 @@ class SlurmSeasStatsCollector(diamond.collector.Collector):
       proc = subprocess.Popen(['/usr/local/bin/showq',
       '-s',
       '-p',
-      'seas',
+      'seas_compute',
       ], stdout=subprocess.PIPE,
       universal_newlines=True)
     except:
