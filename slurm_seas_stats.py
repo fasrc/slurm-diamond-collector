@@ -92,6 +92,11 @@ class SlurmSeasStatsCollector(diamond.collector.Collector):
           self.publish("scct",summary[6])
           self.publish("scnu",summary[18])
           self.publish("scnt",summary[20])
+        if "Idle" in line:
+          line = line.replace("("," ").replace(")"," ")
+          summary = (" ".join(line.split())).split(" ")
+          # Publishes number of pending jobs on seas compute partition
+          self.publish("scpj",summary[8])
 
     try:
       proc = subprocess.Popen(['/usr/local/bin/showq',
@@ -114,3 +119,8 @@ class SlurmSeasStatsCollector(diamond.collector.Collector):
           self.publish("sggt",summary[13])
           self.publish("sgnu",summary[18])
           self.publish("sgnt",summary[20])
+        if "Idle" in line:
+          line = line.replace("("," ").replace(")"," ")
+          summary = (" ".join(line.split())).split(" ")
+          # Publishes number of pending jobs on seas gpu partition
+          self.publish("sgpj",summary[8])
