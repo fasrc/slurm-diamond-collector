@@ -61,6 +61,7 @@ class SlurmSeasStatsCollector(diamond.collector.Collector):
         if Partition.count('zickler') > 0: jseas += 1
         if Partition.count('cox') > 0: jseas += 1
         if Partition.count('seas') > 0: jseas += 1
+        if Partition.count('kempner') > 0: jseas += 1
 
         jcnt = jcnt + 1
 
